@@ -4,11 +4,13 @@ import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Card } from "@/components/ui/card"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 
 export default function HomePage() {
   const [currentPoetry, setCurrentPoetry] = useState(0)
   const [showWelcome, setShowWelcome] = useState(true)
   const [inkDrops, setInkDrops] = useState<Array<{ id: number; x: number; y: number }>>([])
+  const router = useRouter()
 
   const poetryLines = [
     "明月几时有，把酒问青天",
@@ -66,7 +68,18 @@ export default function HomePage() {
     },
   ]
 
+  // 检查是否是从登录页面返回的
+  const [isFromLogin, setIsFromLogin] = useState(false)
+
   useEffect(() => {
+    // 检查是否是从登录页面返回的
+    const fromLogin = sessionStorage.getItem('fromLogin')
+    if (fromLogin === 'true') {
+      setShowWelcome(false)
+      setIsFromLogin(true)
+      sessionStorage.removeItem('fromLogin') // 清除标记
+    }
+
     // 诗词轮播
     const poetryTimer = setInterval(() => {
       setCurrentPoetry((prev) => (prev + 1) % poetryLines.length)
@@ -80,16 +93,22 @@ export default function HomePage() {
     }))
     setInkDrops(drops)
 
-    // 欢迎页面自动消失
-    const welcomeTimer = setTimeout(() => {
-      setShowWelcome(false)
-    }, 2000)
+    // 欢迎页面自动消失并跳转到登录页面
+    // 只有不是从登录页面返回时才执行欢迎动画和跳转
+    let welcomeTimer: NodeJS.Timeout | null = null
+    if (!isFromLogin) {
+      welcomeTimer = setTimeout(() => {
+        setShowWelcome(false)
+        // 跳转到登录页面
+        router.push("/login")
+      }, 2000)
+    }
 
     return () => {
       clearInterval(poetryTimer)
-      clearTimeout(welcomeTimer)
+      if (welcomeTimer) clearTimeout(welcomeTimer)
     }
-  }, [])
+  }, [isFromLogin])
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-rice-paper via-ivory-white to-rice-paper relative overflow-hidden">
@@ -131,8 +150,8 @@ export default function HomePage() {
                 initial={{ scale: 0, rotate: -180 }}
                 animate={{ scale: 1, rotate: 0 }}
                 transition={{ duration: 1, ease: "easeOut" }}
-                className="w-32 h-32 mx-auto mb-6 bg-gradient-to-br from-ancient-gold to-bronze-gold rounded-full flex items-center justify-center text-4xl"
-              >
+                className="w-32 h-32 mx-auto mb-6 bg-gradient-to-br from-ancient-gold to-bronze-gold rounded-full flex items-center justify-center text-4xl font-bold"
+                >
                 临安录
               </motion.div>
               <motion.h1

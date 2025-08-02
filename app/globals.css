@@ -140,6 +140,17 @@ body {
   text-shadow: 1px 1px 2px rgba(212, 175, 55, 0.3);
   letter-spacing: 0.1em;
 }
+/* 禹卫书法行书繁体 开局动画字体*/
+/* 全局 CSS 中添加 */
+@font-face {
+  font-family: 'LinAnFont'; /* 自定义字体名称，后续引用 */
+  src: url('../public/fonts/YuWeiShuFaXingShuFanTi-1.ttf') format('truetype'); /* 重点：支持 TTF 格式 */
+  font-weight: normal;
+  font-style: normal;
+  /* 可选：添加字体显示策略，优化加载体验 */
+  font-display: swap;
+}
+
 
 .ancient-text {
   font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "WenQuanYi Micro Hei", serif;
