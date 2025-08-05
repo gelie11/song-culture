@@ -6,8 +6,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import { Card } from "@/components/ui/card"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-
-/**
+/**  
  * 应用主页组件
  * 该组件会根据用户登录状态进行渲染，未登录时重定向到认证页面。
  */
@@ -121,7 +120,10 @@ export default function HomePage() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-gradient-to-br from-ink-black via-deep-ink to-jade-green z-50 flex items-center justify-center"
+          className="relative flex min-h-screen items-center justify-center bg-cover bg-center font-inter p-4"
+          style={{
+            backgroundImage: "url('wel.png')",
+          }}
         >
           <div className="text-center">
             <motion.div
@@ -203,6 +205,7 @@ export default function HomePage() {
         />
       ))}
       <div className="relative z-10 p-6">
+        {/*顶部用户信息 */}
         <div className="flex justify-between items-center mb-8">
           <motion.div
             initial={{ opacity: 0, x: -50 }}
