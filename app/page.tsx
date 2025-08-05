@@ -1,15 +1,21 @@
-"use client"
+"use client"; // 标记为客户端组件
 
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
+// Card 组件假设可用
 import { Card } from "@/components/ui/card"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 
+/**
+ * 应用主页组件
+ * 该组件会根据用户登录状态进行渲染，未登录时重定向到认证页面。
+ */
 export default function HomePage() {
   const [currentPoetry, setCurrentPoetry] = useState(0)
   const [showWelcome, setShowWelcome] = useState(true)
   const [inkDrops, setInkDrops] = useState<Array<{ id: number; x: number; y: number }>>([])
+  const [loggedInUser, setLoggedInUser] = useState<string | null>(null);
   const router = useRouter()
 
   const poetryLines = [
@@ -68,21 +74,25 @@ export default function HomePage() {
     },
   ]
 
-  // 检查是否是从登录页面返回的
-  const [isFromLogin, setIsFromLogin] = useState(false)
-
   useEffect(() => {
-    // 检查是否是从登录页面返回的
-    const fromLogin = sessionStorage.getItem('fromLogin')
-    if (fromLogin === 'true') {
-      setShowWelcome(false)
-      setIsFromLogin(true)
-      sessionStorage.removeItem('fromLogin') // 清除标记
+    // 检查登录状态
+    const user = localStorage.getItem('loggedInUser');
+    if (user) {
+      setLoggedInUser(user);
+      // 如果已登录，跳过欢迎动画
+      setShowWelcome(false);
+    } else {
+      // 如果未登录，在欢迎动画结束后重定向到认证页面
+      const welcomeTimer = setTimeout(() => {
+        setShowWelcome(false);
+        router.push("/login"); // 重定向到新的登录页面
+      }, 2000); // 欢迎动画持续 2 秒
+      return () => clearTimeout(welcomeTimer);
     }
-
+    
     // 诗词轮播
     const poetryTimer = setInterval(() => {
-      setCurrentPoetry((prev) => (prev + 1) % poetryLines.length)
+      setCurrentPoetry((prev) => (prev + 1) % poetryLines.length);
     }, 3000)
 
     // 生成水墨滴落效果
@@ -93,33 +103,90 @@ export default function HomePage() {
     }))
     setInkDrops(drops)
 
-    // 欢迎页面自动消失并跳转到登录页面
-    // 只有不是从登录页面返回时才执行欢迎动画和跳转
-    let welcomeTimer: NodeJS.Timeout | null = null
-    if (!isFromLogin) {
-      welcomeTimer = setTimeout(() => {
-        setShowWelcome(false)
-        // 跳转到登录页面
-        router.push("/login")
-      }, 2000)
-    }
-
     return () => {
       clearInterval(poetryTimer)
-      if (welcomeTimer) clearTimeout(welcomeTimer)
     }
-  }, [isFromLogin])
+  }, [router]);
 
+  const handleLogout = () => {
+    localStorage.removeItem("loggedInUser"); // 清除登录状态
+    router.push("/login"); // 重定向到登录页面
+  };
+
+  // 如果未登录，显示加载或欢迎动画
+  if (!loggedInUser && showWelcome) {
+    return (
+      <AnimatePresence>
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 bg-gradient-to-br from-ink-black via-deep-ink to-jade-green z-50 flex items-center justify-center"
+        >
+          <div className="text-center">
+            <motion.div
+              initial={{ scale: 0, rotate: -180 }}
+              animate={{ scale: 1, rotate: 0 }}
+              transition={{ duration: 1, ease: "easeOut" }}
+              className="w-32 h-32 mx-auto mb-6 bg-gradient-to-br from-ancient-gold to-bronze-gold rounded-full flex items-center justify-center text-4xl font-bold"
+              >
+              临安录
+            </motion.div>
+            <motion.h1
+              initial={{ opacity: 0, y: 50 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5, duration: 0.8 }}
+              className="text-3xl font-bold ancient-title mb-2"
+            >
+              宋韵漫游
+            </motion.h1>
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 1, duration: 0.8 }}
+              className="text-ivory-white ancient-text"
+            >
+              穿越千年，品味宋韵之美
+            </motion.p>
+          </div>
+        </motion.div>
+      </AnimatePresence>
+    );
+  }
+  
+  if (!loggedInUser) {
+    // 欢迎动画结束后但未登录时，不渲染任何内容，等待重定向
+    return null;
+  }
+
+  // 以下是主页的正常内容
   return (
-    <div className="min-h-screen bg-gradient-to-br from-rice-paper via-ivory-white to-rice-paper relative overflow-hidden">
-      {/* 古风背景纹样 */}
+    <div
+      className="min-h-screen relative overflow-hidden bg-cover bg-center font-inter bg-gray-50" // 使用更柔和的背景色，模拟背景图的浅色调
+      // 使用占位符图片作为背景，以更好地适应不同屏幕
+      style={{ backgroundImage: `url('chushijiemian.jpg')` }}
+    >
+      <style jsx global>{`
+        .ancient-pattern {
+          background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNzIiIGhlaWdodD0iNzIiIHZpZXdCb3g9IjAgMCA3MiA3MiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iNjAiIGN5PSI2MC41IiByPSIxMS41IiBmaWxsPSIjRERERUREMyIvPgo8cGF0aCBkPSJNNCA2MC41VjcySDIxLjVWNjAuNUgxOFY1NkgyOVY0Ni41SDE0VjQySDEwVjQ2LjVIMlY1Nkg3VjYwLjVIMTRWNjZIN1Y2OC41SDRWNjAuNVoiIGZpbGw9IiNERERFRDMiLz4KPC9zdmc+');
+          opacity: 0.1;
+          pointer-events: none;
+        }
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        .animate-fade-in {
+          animation: fadeIn 1s ease-in-out;
+        }
+      `}</style>
       <div className="absolute inset-0 ancient-pattern" />
 
       {/* 水墨滴落效果 */}
       {inkDrops.map((drop) => (
         <motion.div
           key={drop.id}
-          className="absolute w-3 h-3 rounded-full bg-ink-black opacity-20 ink-drop"
+          className="absolute w-3 h-3 rounded-full bg-slate-300 opacity-20 ink-drop" // 将水墨滴落效果颜色调整为更浅的灰色
           style={{
             left: `${drop.x}%`,
             top: `${drop.y}%`,
@@ -135,57 +202,36 @@ export default function HomePage() {
           }}
         />
       ))}
-
-      {/* 欢迎动画 */}
-      <AnimatePresence>
-        {showWelcome && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-gradient-to-br from-ink-black via-deep-ink to-jade-green z-50 flex items-center justify-center"
-          >
-            <div className="text-center">
-              <motion.div
-                initial={{ scale: 0, rotate: -180 }}
-                animate={{ scale: 1, rotate: 0 }}
-                transition={{ duration: 1, ease: "easeOut" }}
-                className="w-32 h-32 mx-auto mb-6 bg-gradient-to-br from-ancient-gold to-bronze-gold rounded-full flex items-center justify-center text-4xl font-bold"
-                >
-                临安录
-              </motion.div>
-              <motion.h1
-                initial={{ opacity: 0, y: 50 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.5, duration: 0.8 }}
-                className="text-3xl font-bold text-ancient-gold ancient-title mb-2"
-              >
-                宋韵漫游
-              </motion.h1>
-              <motion.p
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 1, duration: 0.8 }}
-                className="text-ivory-white ancient-text"
-              >
-                穿越千年，品味宋韵之美
-              </motion.p>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* 主要内容 */}
       <div className="relative z-10 p-6">
+        <div className="flex justify-between items-center mb-8">
+          <motion.div
+            initial={{ opacity: 0, x: -50 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.8 }}
+            className="text-2xl font-bold ancient-title text-black" // 文字颜色改为黑色，以便在亮背景上可见
+          >
+            你好，{loggedInUser}
+          </motion.div>
+          <motion.button
+            onClick={handleLogout}
+            initial={{ opacity: 0, x: 50 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.8 }}
+            className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-md transition-all shadow-md hover:shadow-lg"
+          >
+            退出
+          </motion.button>
+        </div>
+        
         {/* 顶部标题区域 */}
         <motion.div
           initial={{ opacity: 0, y: -50 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 2.2, duration: 0.8 }}
+          transition={{ duration: 0.8 }}
           className="text-center mb-8"
         >
           <div className="relative">
-            <h1 className="text-4xl font-bold ancient-title mb-4 text-ink-black">宋韵漫游</h1>
+            <h1 className="text-4xl font-bold ancient-title mb-4 text-black">宋韵漫游</h1> {/* 文字颜色改为黑色 */}
             <div className="w-24 h-1 bg-gradient-to-r from-ancient-gold to-bronze-gold mx-auto rounded-full" />
           </div>
         </motion.div>
@@ -194,10 +240,10 @@ export default function HomePage() {
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 2.5, duration: 0.8 }}
+          transition={{ delay: 0.2, duration: 0.8 }}
           className="mb-8"
         >
-          <Card className="ancient-card p-6 text-center bg-gradient-to-br from-ivory-white to-rice-paper">
+          <Card className="ancient-card p-6 text-center bg-white/10 backdrop-blur-sm shadow-lg border border-gray-200"> {/* 修改为更透明的背景 */}
             <div className="h-16 flex items-center justify-center">
               <AnimatePresence mode="wait">
                 <motion.p
@@ -229,7 +275,7 @@ export default function HomePage() {
         <motion.div
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 2.8, duration: 0.8 }}
+          transition={{ delay: 0.4, duration: 0.8 }}
           className="space-y-4 mb-8"
         >
           {culturalModules.map((module, index) => (
@@ -237,10 +283,10 @@ export default function HomePage() {
               key={module.id}
               initial={{ opacity: 0, x: index % 2 === 0 ? -50 : 50 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 3 + index * 0.2, duration: 0.6 }}
+              transition={{ delay: 0.6 + index * 0.2, duration: 0.6 }}
             >
               <Link href={module.path}>
-                <Card className="ancient-card p-6 hover:shadow-xl transition-all duration-300 cursor-pointer group">
+                <Card className="ancient-card p-6 hover:shadow-xl transition-all duration-300 cursor-pointer group bg-white/10 backdrop-blur-sm shadow-lg border border-gray-200"> {/* 修改为更透明的背景 */}
                   <div className="flex items-center space-x-4">
                     <div
                       className={`w-16 h-16 rounded-full bg-gradient-to-br ${module.color} flex items-center justify-center text-2xl group-hover:scale-110 transition-transform duration-300`}
@@ -266,10 +312,10 @@ export default function HomePage() {
         <motion.div
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 4, duration: 0.8 }}
+          transition={{ delay: 1, duration: 0.8 }}
           className="text-center mb-8"
         >
-          <Card className="ancient-card p-6 bg-gradient-to-br from-jade-green/10 to-ancient-gold/10">
+          <Card className="ancient-card p-6 bg-white/10 backdrop-blur-sm shadow-lg border border-gray-200"> {/* 修改为更透明的背景 */}
             <div className="relative inline-block mb-4">
               <motion.div
                 animate={{ rotate: [0, 5, -5, 0] }}
@@ -296,10 +342,10 @@ export default function HomePage() {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 4.5, duration: 0.8 }}
+          transition={{ delay: 1.2, duration: 0.8 }}
           className="text-center"
         >
-          <div className="flex items-center justify-center space-x-2 text-deep-ink/70">
+          <div className="flex items-center justify-center space-x-2 text-black/70"> {/* 文字颜色改为黑色 */}
             <span className="text-sm ancient-text">点击体验各个文化模块</span>
             <motion.div
               animate={{ y: [0, 5, 0] }}
@@ -311,18 +357,6 @@ export default function HomePage() {
           </div>
         </motion.div>
       </div>
-
-      {/* 底部装饰 */}
-      <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-jade-green/20 to-transparent" />
-      <svg className="absolute bottom-0 w-full h-16" viewBox="0 0 430 64" fill="none">
-        <path d="M0,64 Q107.5,40 215,48 T430,44 L430,64 Z" fill="url(#mountain-gradient)" />
-        <defs>
-          <linearGradient id="mountain-gradient" x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stopColor="#1e3a2e" stopOpacity="0.3" />
-            <stop offset="100%" stopColor="#0f2419" stopOpacity="0.5" />
-          </linearGradient>
-        </defs>
-      </svg>
     </div>
   )
 }
