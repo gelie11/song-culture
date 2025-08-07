@@ -1,58 +1,69 @@
-"use client"
+"use client";
 
-import { useState, useEffect, useRef, useCallback } from "react"
-import { motion, AnimatePresence } from "framer-motion"
-import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
-import Link from "next/link"
-import { ArrowLeft, Leaf, Flame, Coffee, CheckCircle, Clock, Move3d } from "lucide-react"
-import * as THREE from 'three';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import { randFloat, randInt } from 'three/src/math/MathUtils.js';
+import { useState, useEffect, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import Link from "next/link";
+import { ArrowLeft, Leaf, Flame, Coffee, CheckCircle, ChevronLeft, ChevronRight } from "lucide-react";
+
+// 照片URL - 实际应用中替换为真实图片
+const TEA_PHOTOS = [
+  "/tea-photos/1.jpg", "/tea-photos/2.jpg", "/tea-photos/3.jpg",
+  "/tea-photos/4.jpg", "/tea-photos/5.jpg", "/tea-photos/6.jpg",
+  "/tea-photos/7.jpg", "/tea-photos/8.jpg", "/tea-photos/9.jpg",
+];
+
+// 炒茶熔炉状态照片
+const ROASTING_FURNACE_PHOTOS = [
+  "/tea-photos/cool.png",    // 冷炉状态
+  "/tea-photos/warm.png",    // 温热状态
+  "/tea-photos/hot.png",     // 高温状态
+  "/tea-photos/optimal.png"  // 最佳温度状态
+];
 
 export default function TeaPage() {
+  // 游戏核心状态
   const [gameStage, setGameStage] = useState<'picking' | 'roasting' | 'brewing' | 'finished'>('picking');
-  const [pickedLeavesCount, setPickedLeavesCount] = useState(0);
-  const [roastingProgress, setRoastingProgress] = useState(0);
-  const [brewingProgress, setBrewingProgress] = useState(0);
-  const [currentPoetryIndex, setCurrentPoetryIndex] = useState(0);
-  const [finalScore, setFinalScore] = useState(0);
   const [teaQuality, setTeaQuality] = useState({ picking: 0, roasting: 0, brewing: 0 });
-
-  // 采摘阶段的状态
-  const [pickingTime, setPickingTime] = useState(0);
-  const pickingTimerRef = useRef<NodeJS.Timeout | null>(null);
-
-  // 炒茶阶段的状态
-  const [isStirring, setIsStirring] = useState(false);
-  const [roastingTemp, setRoastingTemp] = useState(0);
-  const tempIntervalRef = useRef<NodeJS.Timeout | null>(null);
-  const roastTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const [fireParticles, setFireParticles] = useState<number[]>([]);
-
-  // 泡茶阶段的状态
-  const [waterLevel, setWaterLevel] = useState(0);
-  const brewTimerRef = useRef<NodeJS.Timeout | null>(null);
-
-  // three.js 的引用
-  const mountRef = useRef<HTMLDivElement>(null);
-  const sceneRef = useRef<THREE.Scene | null>(null);
-  const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
-  const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
-  const controlsRef = useRef<OrbitControls | null>(null);
-  const leafMeshesRef = useRef<THREE.Mesh[]>([]);
-  const pickingLeafPoetryIntervalRef = useRef<NodeJS.Timeout | null>(null);
-  const raycasterRef = useRef(new THREE.Raycaster());
-  const audioContextRef = useRef<AudioContext | null>(null);
   
-  // 游戏配置
-  const REQUIRED_LEAVES = 10;
-  const ROAST_TIME_MS = 10000;
-  const PERFECT_ROAST_TEMP_MIN = 60;
-  const PERFECT_ROAST_TEMP_MAX = 80;
-  const OPTIMAL_WATER_LEVEL = 75; // 百分比
-  const PICKING_TIME_LIMIT = 30; // 秒
-
+  // 照片浏览状态
+  const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
+  
+  // 炒茶阶段状态
+  const [roastingProgress, setRoastingProgress] = useState(0);
+  const [isHeating, setIsHeating] = useState(false);
+  const [temperature, setTemperature] = useState(20); // 初始温度20°C
+  const [perfectSeconds, setPerfectSeconds] = useState(0);
+  const totalRoastSeconds = 12; // 延长总炒制时间至12秒，确保有足够时间达到理想温度
+  
+  // 温度控制参数 - 加快升温速度
+  const HEAT_RATE = 8;  // 每秒升温8°C
+  const COOL_RATE = 4;  // 每秒降温4°C
+  
+  // 定时器引用
+  const temperatureInterval = useRef<NodeJS.Timeout | null>(null);
+  const roastTimer = useRef<NodeJS.Timeout | null>(null);
+  const tempCheckTimer = useRef<NodeJS.Timeout | null>(null);
+  
+  // 火焰效果状态
+  const [fireParticles, setFireParticles] = useState<number[]>([]);
+  
+  // 泡茶阶段状态
+  const [waterLevel, setWaterLevel] = useState(0);
+  const [brewingProgress, setBrewingProgress] = useState(0);
+  const brewTimer = useRef<NodeJS.Timeout | null>(null);
+  
+  // 最终评分和诗句
+  const [finalScore, setFinalScore] = useState(0);
+  const [currentPoetryIndex, setCurrentPoetryIndex] = useState(0);
+  
+  // 游戏配置常量
+  const IDEAL_TEMP_MIN = 50;    // 理想温度区间最小值
+  const IDEAL_TEMP_MAX = 90;    // 理想温度区间最大值
+  const OPTIMAL_WATER_LEVEL = 75;
+  
+  // 茶诗数据
   const teaPoetry = [
     { text: "从来佳茗似佳人", author: "苏轼" },
     { text: "休对故人思故国，且将新火试新茶", author: "苏轼" },
@@ -62,628 +73,220 @@ export default function TeaPage() {
     { text: "春风解恼撩诗客，新火来烹第一茶", author: "陆游" },
   ];
 
-  // =========================================================================
-  // three.js 场景设置（优化茶树模型）
-  // =========================================================================
-  const setupThreeScene = useCallback(() => {
-    if (!mountRef.current) return () => {};
+  // 照片浏览逻辑
+  const goToNextPhoto = () => {
+    setCurrentPhotoIndex((prev) => (prev + 1) % TEA_PHOTOS.length);
+  };
 
-    const currentMount = mountRef.current;
-    const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0xf8f2e9);
-    sceneRef.current = scene;
+  const goToPrevPhoto = () => {
+    setCurrentPhotoIndex((prev) => (prev - 1 + TEA_PHOTOS.length) % TEA_PHOTOS.length);
+  };
 
-    const camera = new THREE.PerspectiveCamera(75, currentMount.clientWidth / currentMount.clientHeight, 0.1, 1000);
-    camera.position.set(0, 5, 10);
-    cameraRef.current = camera;
-
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-    renderer.setSize(currentMount.clientWidth, currentMount.clientHeight);
-    renderer.setPixelRatio(window.devicePixelRatio);
-    renderer.shadowMap.enabled = true;
-    currentMount.appendChild(renderer.domElement);
-    rendererRef.current = renderer;
-
-    const controls = new OrbitControls(camera, renderer.domElement);
-    controls.minPolarAngle = Math.PI / 4;
-    controls.maxPolarAngle = Math.PI / 2;
-    controls.enablePan = false;
-    controls.enableZoom = true;
-    controls.zoomSpeed = 0.8;
-    controlsRef.current = controls;
-
-    // 灯光设置
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
-    scene.add(ambientLight);
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 1.2);
-    directionalLight.position.set(5, 10, 7.5);
-    directionalLight.castShadow = true;
-    directionalLight.shadow.mapSize.width = 1024;
-    directionalLight.shadow.mapSize.height = 1024;
-    scene.add(directionalLight);
-    
-    const hemisphereLight = new THREE.HemisphereLight(0xb1e1ff, 0xb97a20, 0.5);
-    scene.add(hemisphereLight);
-
-    // 地面
-    const groundGeometry = new THREE.PlaneGeometry(100, 100);
-    const groundMaterial = new THREE.MeshStandardMaterial({ 
-      color: 0x98c56c,
-      roughness: 0.8,
-      metalness: 0.2
-    });
-    const ground = new THREE.Mesh(groundGeometry, groundMaterial);
-    ground.rotation.x = -Math.PI / 2;
-    ground.position.y = -2;
-    scene.add(ground);
-    ground.receiveShadow = true;
-
-    // 添加背景元素 - 远山
-    const mountainGroup = new THREE.Group();
-    for (let i = 0; i < 3; i++) {
-      const mountainGeometry = new THREE.ConeGeometry(5, 8, 4);
-      const mountainMaterial = new THREE.MeshStandardMaterial({ 
-        color: i === 0 ? 0x5a7d59 : i === 1 ? 0x4a6b48 : 0x3a5a38,
-        side: THREE.DoubleSide
-      });
-      const mountain = new THREE.Mesh(mountainGeometry, mountainMaterial);
-      mountain.position.set(i * 10 - 15, -2, -15 - i * 5);
-      mountain.rotation.x = Math.PI / 2;
-      mountain.scale.set(1, 1.5 + i * 0.3, 1);
-      mountain.castShadow = true;
-      mountainGroup.add(mountain);
+  // 根据温度获取对应的熔炉照片
+  const getFurnacePhoto = () => {
+    if (temperature >= IDEAL_TEMP_MIN && temperature <= IDEAL_TEMP_MAX) {
+      return ROASTING_FURNACE_PHOTOS[3]; // 最佳温度
+    } else if (temperature > IDEAL_TEMP_MAX) {
+      return ROASTING_FURNACE_PHOTOS[2]; // 高温
+    } else if (temperature > 30) {
+      return ROASTING_FURNACE_PHOTOS[1]; // 温热
     }
-    scene.add(mountainGroup);
-
-    // 动画循环
-    const animate = () => {
-      requestAnimationFrame(animate);
-      controls.update();
-      renderer.render(scene, camera);
-      
-      // 叶子浮动动画
-      leafMeshesRef.current.forEach(leaf => {
-        leaf.position.y += Math.sin(Date.now() * 0.001 + leaf.userData.offset) * 0.002;
-        leaf.rotation.y += 0.005;
-      });
-    };
-    animate();
-
-    // 创建茶树主干
-    const createTreeTrunk = () => {
-      const trunkGroup = new THREE.Group();
-      
-      // 主树干
-      const trunkGeometry = new THREE.CylinderGeometry(0.3, 0.8, 5, 8);
-      const trunkMaterial = new THREE.MeshStandardMaterial({ 
-        color: 0x654321,
-        roughness: 0.9,
-        metalness: 0.1
-      });
-      const trunk = new THREE.Mesh(trunkGeometry, trunkMaterial);
-      trunk.castShadow = true;
-      trunkGroup.add(trunk);
-      
-      // 树枝
-      const branchGeometry = new THREE.CylinderGeometry(0.1, 0.15, 3, 6);
-      for (let i = 0; i < 6; i++) {
-        const angle = (i / 6) * Math.PI * 2;
-        const height = 2 + Math.random() * 2;
-        
-        const branch = new THREE.Mesh(branchGeometry, trunkMaterial);
-        branch.position.y = height;
-        branch.rotation.z = Math.PI / 4 + Math.random() * Math.PI / 8;
-        branch.rotation.y = angle;
-        branch.castShadow = true;
-        trunkGroup.add(branch);
-        
-        // 小分支
-        const smallBranchGeometry = new THREE.CylinderGeometry(0.05, 0.08, 1.5, 5);
-        for (let j = 0; j < 3; j++) {
-          const smallBranch = new THREE.Mesh(smallBranchGeometry, trunkMaterial);
-          smallBranch.position.set(1.2, j * 0.5, 0);
-          smallBranch.rotation.z = Math.PI / 3;
-          branch.add(smallBranch);
-        }
-      }
-      
-      trunkGroup.position.y = -1;
-      return trunkGroup;
-    };
-
-    const treeTrunk = createTreeTrunk();
-    scene.add(treeTrunk);
-
-    // 创建更逼真的叶子，并增大其点击区域
-    const generateLeaves = () => {
-      const leaves: THREE.Mesh[] = [];
-      const newLeafMaterial = new THREE.MeshStandardMaterial({ 
-        color: 0x8fc93a,
-        emissive: 0x223300,
-        side: THREE.DoubleSide,
-        transparent: true,
-        opacity: 0.9
-      });
-      const oldLeafMaterial = new THREE.MeshStandardMaterial({ 
-        color: 0x3a4b00,
-        side: THREE.DoubleSide,
-        transparent: true,
-        opacity: 0.8
-      });
-
-      // 创建更自然的叶子形状
-      const createLeafShape = () => {
-        const shape = new THREE.Shape();
-        shape.moveTo(0, 0);
-        shape.bezierCurveTo(0.4, 0.2, 1, 1, 0.4, 2);
-        shape.bezierCurveTo(0.2, 2.4, 0, 3, -0.2, 2.4);
-        shape.bezierCurveTo(-1, 1, -0.4, 0.2, 0, 0);
-        return new THREE.ShapeGeometry(shape);
-      };
-      
-      const leafGeometry = createLeafShape();
-
-      // 在树枝上添加叶子
-      treeTrunk.traverse((node) => {
-        if (node instanceof THREE.Mesh && node.geometry.type === 'CylinderGeometry') {
-          const branchLength = node.geometry.parameters.height;
-          
-          for (let i = 0; i < 8; i++) {
-            const isNewLeaf = Math.random() < 0.4;
-            const material = isNewLeaf ? newLeafMaterial : oldLeafMaterial;
-            const leaf = new THREE.Mesh(leafGeometry, material);
-            leaf.name = `leaf-${leaves.length}`;
-
-            // 沿着树枝分布
-            const posX = (Math.random() - 0.5) * 0.5;
-            const posY = (Math.random() - 0.5) * branchLength;
-            const posZ = (Math.random() - 0.5) * 0.5;
-            
-            leaf.position.set(posX, posY, posZ);
-            leaf.rotation.set(
-              Math.random() * Math.PI,
-              Math.random() * Math.PI,
-              Math.random() * Math.PI
-            );
-            
-            const scale = 0.25 + Math.random() * 0.1;
-            leaf.scale.set(scale, scale, scale);
-            
-            leaf.userData = { 
-              isNewLeaf, 
-              isOldLeaf: !isNewLeaf, 
-              offset: Math.random() * 2 * Math.PI,
-              originalScale: new THREE.Vector3(scale, scale, scale)
-            };
-            
-            node.add(leaf);
-            if (isNewLeaf) {
-              leaves.push(leaf);
-            }
-          }
-        }
-      });
-
-      // 添加一些额外的叶子在树顶
-      for (let i = 0; i < 15; i++) {
-        const isNewLeaf = Math.random() < 0.4;
-        const material = isNewLeaf ? newLeafMaterial : oldLeafMaterial;
-        const leaf = new THREE.Mesh(leafGeometry, material);
-        leaf.name = `leaf-${leaves.length}`;
-
-        const x = (Math.random() - 0.5) * 3;
-        const y = (Math.random() - 0.5) * 2 + 5;
-        const z = (Math.random() - 0.5) * 3;
-        
-        leaf.position.set(x, y, z);
-        leaf.rotation.set(
-          Math.random() * Math.PI,
-          Math.random() * Math.PI,
-          Math.random() * Math.PI
-        );
-        
-        const scale = 0.25 + Math.random() * 0.1;
-        leaf.scale.set(scale, scale, scale);
-        leaf.userData = { 
-          isNewLeaf, 
-          isOldLeaf: !isNewLeaf, 
-          offset: Math.random() * 2 * Math.PI,
-          originalScale: new THREE.Vector3(scale, scale, scale)
-        };
-        
-        scene.add(leaf);
-        if (isNewLeaf) {
-          leaves.push(leaf);
-        }
-      }
-      
-      leafMeshesRef.current = leaves;
-    };
-    
-    generateLeaves();
-
-    // 添加一个简单的"茶灵"角色
-    const createTeaSpirit = () => {
-      const spiritGroup = new THREE.Group();
-      
-      // 身体
-      const bodyGeometry = new THREE.SphereGeometry(0.3, 16, 16);
-      const bodyMaterial = new THREE.MeshStandardMaterial({ 
-        color: 0xfde047,
-        emissive: 0xfde047,
-        emissiveIntensity: 0.5
-      });
-      const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
-      spiritGroup.add(body);
-      
-      // 眼睛
-      const eyeGeometry = new THREE.SphereGeometry(0.05, 8, 8);
-      const eyeMaterial = new THREE.MeshStandardMaterial({ color: 0x000000 });
-      const leftEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
-      leftEye.position.set(0.15, 0.1, 0.25);
-      spiritGroup.add(leftEye);
-      
-      const rightEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
-      rightEye.position.set(-0.15, 0.1, 0.25);
-      spiritGroup.add(rightEye);
-      
-      // 嘴巴
-      const mouthGeometry = new THREE.TorusGeometry(0.1, 0.02, 8, 16, Math.PI);
-      const mouthMaterial = new THREE.MeshStandardMaterial({ color: 0x000000 });
-      const mouth = new THREE.Mesh(mouthGeometry, mouthMaterial);
-      mouth.rotation.x = Math.PI / 2;
-      mouth.position.z = 0.2;
-      mouth.position.y = -0.1;
-      spiritGroup.add(mouth);
-      
-      // 动画
-      const animateSpirit = () => {
-        spiritGroup.position.x = Math.sin(Date.now() * 0.001) * 2;
-        spiritGroup.position.y = 4 + Math.cos(Date.now() * 0.0005) * 0.5;
-        spiritGroup.position.z = Math.cos(Date.now() * 0.001) * 2;
-        spiritGroup.rotation.y += 0.01;
-        
-        // 轻微上下浮动
-        spiritGroup.position.y += Math.sin(Date.now() * 0.002) * 0.05;
-        
-        requestAnimationFrame(animateSpirit);
-      };
-      
-      spiritGroup.position.set(0, 4, 0);
-      scene.add(spiritGroup);
-      animateSpirit();
-    };
-    
-    createTeaSpirit();
-
-    // 窗口大小调整处理程序
-    const onResize = () => {
-      if (mountRef.current && cameraRef.current && rendererRef.current) {
-        cameraRef.current.aspect = mountRef.current.clientWidth / mountRef.current.clientHeight;
-        cameraRef.current.updateProjectionMatrix();
-        rendererRef.current.setSize(mountRef.current.clientWidth, mountRef.current.clientHeight);
-      }
-    };
-    
-    window.addEventListener('resize', onResize);
-    return () => {
-      window.removeEventListener('resize', onResize);
-      if (rendererRef.current && rendererRef.current.domElement.parentNode) {
-        rendererRef.current.domElement.parentNode.removeChild(rendererRef.current.domElement);
-      }
-    };
-  }, []);
+    return ROASTING_FURNACE_PHOTOS[0]; // 冷炉
+  };
 
   // =========================================================================
-  // 采摘阶段逻辑（已改进）
+  // 炒茶阶段核心逻辑
   // =========================================================================
-  
-  // 使用 AudioContext API 来生成音效
-  const playPickSound = useCallback(() => {
-    try {
-      if (!audioContextRef.current) {
-        audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
-      }
-      const oscillator = audioContextRef.current.createOscillator();
-      const gainNode = audioContextRef.current.createGain();
-      oscillator.connect(gainNode);
-      gainNode.connect(audioContextRef.current.destination);
 
-      oscillator.type = 'sine';
-      oscillator.frequency.value = 660; // E5
-      gainNode.gain.setValueAtTime(0, audioContextRef.current.currentTime);
-      gainNode.gain.linearRampToValueAtTime(0.3, audioContextRef.current.currentTime + 0.01);
-      gainNode.gain.linearRampToValueAtTime(0, audioContextRef.current.currentTime + 0.3);
-
-      oscillator.start();
-      oscillator.stop(audioContextRef.current.currentTime + 0.3);
-    } catch (error) {
-      console.error("Audio playback failed:", error);
-    }
-  }, []);
-
-  const handlePickClick = useCallback((event: MouseEvent) => {
-    if (!rendererRef.current || !cameraRef.current || !sceneRef.current || pickedLeavesCount >= REQUIRED_LEAVES) return;
-
-    const mouse = new THREE.Vector2();
-    const rect = rendererRef.current.domElement.getBoundingClientRect();
-    mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-    mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-
-    raycasterRef.current.setFromCamera(mouse, cameraRef.current);
+  // 开始加热（升温）
+  const startHeating = () => {
+    setIsHeating(true);
     
-    // 找到所有相交的对象
-    const intersects = raycasterRef.current.intersectObjects(leafMeshesRef.current, true);
-
-    if (intersects.length > 0) {
-      const intersect = intersects[0];
-      const leafMesh = intersect.object as THREE.Mesh;
-      
-      if (leafMesh.userData.isNewLeaf) {
-        setPickedLeavesCount((prev) => prev + 1);
-        playPickSound(); // 播放音效
-        
-        // 创建采摘动画
-        const targetPosition = new THREE.Vector3(0, 8, 0);
-        const initialPosition = leafMesh.position.clone();
-        const duration = 500; // 动画持续时间（毫秒）
-        const startTime = Date.now();
-        
-        const animatePick = () => {
-          const elapsed = Date.now() - startTime;
-          const progress = Math.min(1, elapsed / duration);
-          
-          // 使用缓动函数使动画更自然
-          const easeProgress = 1 - Math.pow(1 - progress, 3);
-          
-          // 计算中间位置（抛物线）
-          const parabolaHeight = 3;
-          const midX = initialPosition.x + (targetPosition.x - initialPosition.x) * 0.5;
-          const midY = Math.max(initialPosition.y, targetPosition.y) + parabolaHeight;
-          const midZ = initialPosition.z + (targetPosition.z - initialPosition.z) * 0.5;
-          
-          const position = new THREE.Vector3();
-          position.x = (1 - easeProgress) * (1 - easeProgress) * initialPosition.x + 
-                       2 * (1 - easeProgress) * easeProgress * midX + 
-                       easeProgress * easeProgress * targetPosition.x;
-          position.y = (1 - easeProgress) * (1 - easeProgress) * initialPosition.y + 
-                       2 * (1 - easeProgress) * easeProgress * midY + 
-                       easeProgress * easeProgress * targetPosition.y;
-          position.z = (1 - easeProgress) * (1 - easeProgress) * initialPosition.z + 
-                       2 * (1 - easeProgress) * easeProgress * midZ + 
-                       easeProgress * easeProgress * targetPosition.z;
-          
-          leafMesh.position.copy(position);
-          
-          // 缩放动画
-          const scaleFactor = 1 - easeProgress * 0.5;
-          leafMesh.scale.set(
-            leafMesh.userData.originalScale.x * scaleFactor,
-            leafMesh.userData.originalScale.y * scaleFactor,
-            leafMesh.userData.originalScale.z * scaleFactor
-          );
-          
-          if (progress < 1) {
-            requestAnimationFrame(animatePick);
-          } else {
-            // 动画完成后移除叶子
-            sceneRef.current?.remove(leafMesh);
-            const index = leafMeshesRef.current.indexOf(leafMesh);
-            if (index > -1) {
-              leafMeshesRef.current.splice(index, 1);
-            }
-          }
-        };
-        
-        animatePick();
-      }
+    // 清除任何现有温度定时器
+    if (temperatureInterval.current) {
+      clearInterval(temperatureInterval.current);
     }
-  }, [pickedLeavesCount, playPickSound]);
-
-  const handleMouseMove = useCallback((event: MouseEvent) => {
-    if (!rendererRef.current || !cameraRef.current || !sceneRef.current) return;
-
-    const mouse = new THREE.Vector2();
-    const rect = rendererRef.current.domElement.getBoundingClientRect();
-    mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-    mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-    raycasterRef.current.setFromCamera(mouse, cameraRef.current);
-    const intersects = raycasterRef.current.intersectObjects(leafMeshesRef.current, true);
-
-    leafMeshesRef.current.forEach(leaf => {
-        if(leaf.userData.isNewLeaf) {
-            leaf.scale.copy(leaf.userData.originalScale); // 重置尺寸
-            // 使用类型断言解决类型错误
-            (leaf.material as THREE.MeshStandardMaterial).opacity = 0.9; // 重置透明度
-        }
-    });
-
-    if (intersects.length > 0) {
-        const leafMesh = intersects[0].object as THREE.Mesh;
-        if(leafMesh.userData.isNewLeaf) {
-            const scaleFactor = 1.2;
-            leafMesh.scale.set(
-                leafMesh.userData.originalScale.x * scaleFactor,
-                leafMesh.userData.originalScale.y * scaleFactor,
-                leafMesh.userData.originalScale.z * scaleFactor
-            );
-            // 使用类型断言解决类型错误
-            (leafMesh.material as THREE.MeshStandardMaterial).opacity = 1.0; // 高亮显示
-        }
-    }
-  }, []);
-
-  useEffect(() => {
-    let cleanupThreeScene: (() => void) | null = null;
-    let cleanupClickEvent: (() => void) | null = null;
-    let cleanupMouseMoveEvent: (() => void) | null = null;
     
-    if (gameStage === 'picking') {
-      cleanupThreeScene = setupThreeScene();
-      
-      const rendererDom = mountRef.current?.querySelector('canvas');
-      if (rendererDom) {
-        rendererDom.addEventListener('click', handlePickClick);
-        rendererDom.addEventListener('mousemove', handleMouseMove);
-        cleanupClickEvent = () => rendererDom.removeEventListener('click', handlePickClick);
-        cleanupMouseMoveEvent = () => rendererDom.removeEventListener('mousemove', handleMouseMove);
-      }
-
-      pickingLeafPoetryIntervalRef.current = setInterval(() => {
-        setCurrentPoetryIndex(prev => (prev + 1) % teaPoetry.length);
-      }, 5000);
-
-      // 启动采摘计时器
-      const startTime = Date.now();
-      pickingTimerRef.current = setInterval(() => {
-        const elapsed = Math.floor((Date.now() - startTime) / 1000);
-        setPickingTime(elapsed);
-        if (elapsed >= PICKING_TIME_LIMIT) {
-          // 时间到！过渡到炒茶阶段
-          clearInterval(pickingTimerRef.current as NodeJS.Timeout);
-          setTeaQuality(prev => ({ ...prev, picking: pickedLeavesCount }));
-          setGameStage('roasting');
-        }
-      }, 1000);
+    // 设置升温定时器 - 更快的升温速度
+    temperatureInterval.current = setInterval(() => {
+      setTemperature(prev => {
+        const newTemp = prev + HEAT_RATE * 0.1; // 每100ms按比例上升
+        return Math.min(100, newTemp);
+      });
+    }, 100);
+    
+    // 如果尚未开始炒制计时，则启动
+    if (!roastTimer.current) {
+      startRoastingProcess();
     }
+  };
 
-    return () => {
-      if (cleanupThreeScene) cleanupThreeScene();
-      if (cleanupClickEvent) cleanupClickEvent();
-      if (cleanupMouseMoveEvent) cleanupMouseMoveEvent();
-      if (pickingLeafPoetryIntervalRef.current) clearInterval(pickingLeafPoetryIntervalRef.current);
-      if (pickingTimerRef.current) clearInterval(pickingTimerRef.current);
-      if (audioContextRef.current) {
-        audioContextRef.current.close();
-      }
-    };
-  }, [gameStage, setupThreeScene, handlePickClick, handleMouseMove]);
-  
-  // =========================================================================
-  // 炒茶阶段逻辑
-  // =========================================================================
+  // 停止加热（降温）
+  const stopHeating = () => {
+    setIsHeating(false);
+    
+    // 清除任何现有温度定时器
+    if (temperatureInterval.current) {
+      clearInterval(temperatureInterval.current);
+    }
+    
+    // 设置降温定时器
+    temperatureInterval.current = setInterval(() => {
+      setTemperature(prev => {
+        const newTemp = prev - COOL_RATE * 0.1; // 每100ms按比例下降
+        return Math.max(20, newTemp); // 最低温度保持在20°C
+      });
+    }, 100);
+  };
 
-  const handleRoastStart = () => {
-    if (roastTimerRef.current) return;
-    let perfectTime = 0;
-    const roastStartTime = Date.now();
-    const checkProgress = () => {
-      const elapsedTime = Date.now() - roastStartTime;
-      const progress = Math.min(100, (elapsedTime / ROAST_TIME_MS) * 100);
+  // 开始整个炒制过程
+  const startRoastingProcess = () => {
+    // 重置进度
+    setRoastingProgress(0);
+    setPerfectSeconds(0);
+    
+    // 启动主计时器 - 每100ms更新一次进度
+    let elapsedSeconds = 0;
+    roastTimer.current = setInterval(() => {
+      elapsedSeconds += 0.1; // 每次增加0.1秒
+      const progress = Math.min(100, (elapsedSeconds / totalRoastSeconds) * 100);
       setRoastingProgress(progress);
-
-      if (roastingTemp >= PERFECT_ROAST_TEMP_MIN && roastingTemp <= PERFECT_ROAST_TEMP_MAX) {
-        perfectTime++;
+      
+      // 炒制完成
+      if (elapsedSeconds >= totalRoastSeconds) {
+        finishRoasting();
       }
-
-      if (progress >= 100) {
-        setGameStage('brewing');
-        setTeaQuality(prev => ({ ...prev, roasting: perfectTime / (ROAST_TIME_MS / 100) }));
-        if (roastTimerRef.current) clearInterval(roastTimerRef.current);
-      }
-    };
-    roastTimerRef.current = setInterval(checkProgress, 100);
-  };
-
-  const handleFireUp = () => {
-    setIsStirring(true);
-    if (tempIntervalRef.current) clearInterval(tempIntervalRef.current);
-    tempIntervalRef.current = setInterval(() => {
-      setRoastingTemp(prev => Math.min(100, prev + 8));
     }, 100);
-    handleRoastStart();
-  };
-
-  const handleFireDown = () => {
-    setIsStirring(false);
-    if (tempIntervalRef.current) clearInterval(tempIntervalRef.current);
-    tempIntervalRef.current = setInterval(() => {
-      setRoastingTemp(prev => Math.max(0, prev - 3));
+    
+    // 启动温度检查器 - 每100ms检查一次温度是否在理想区间
+    tempCheckTimer.current = setInterval(() => {
+      // 直接使用当前状态值检查
+      if (temperature >= IDEAL_TEMP_MIN && temperature <= IDEAL_TEMP_MAX) {
+        // 每100ms增加0.1秒完美时间
+        setPerfectSeconds(prev => prev + 0.1);
+      }
     }, 100);
   };
 
-  useEffect(() => {
-    if (isStirring) {
-        setFireParticles(Array.from({ length: 50 }, (_, i) => i));
-    } else {
-        setFireParticles([]);
+  // 完成炒制过程
+  const finishRoasting = () => {
+    // 清除所有定时器
+    if (temperatureInterval.current) {
+      clearInterval(temperatureInterval.current);
+      temperatureInterval.current = null;
     }
-  }, [isStirring]);
+    if (roastTimer.current) {
+      clearInterval(roastTimer.current);
+      roastTimer.current = null;
+    }
+    if (tempCheckTimer.current) {
+      clearInterval(tempCheckTimer.current);
+      tempCheckTimer.current = null;
+    }
+    
+    // 计算炒茶评分 (0-100)
+    const roastScore = Math.min(100, Math.round((perfectSeconds / totalRoastSeconds) * 100));
+    
+    // 更新评分并进入下一阶段
+    setTeaQuality(prev => ({ ...prev, roasting: roastScore }));
+    setGameStage('brewing');
+  };
 
+  // 火焰粒子效果
+  useEffect(() => {
+    if (isHeating) {
+      setFireParticles(Array.from({ length: 30 }, (_, i) => i));
+    } else {
+      setFireParticles([]);
+    }
+  }, [isHeating]);
+
+  // 清理定时器
   useEffect(() => {
     return () => {
-      if (tempIntervalRef.current) clearInterval(tempIntervalRef.current);
-      if (roastTimerRef.current) clearInterval(roastTimerRef.current);
+      if (temperatureInterval.current) clearInterval(temperatureInterval.current);
+      if (roastTimer.current) clearInterval(roastTimer.current);
+      if (tempCheckTimer.current) clearInterval(tempCheckTimer.current);
+      if (brewTimer.current) clearInterval(brewTimer.current);
     };
+  }, []);
+
+  // 定时切换诗句
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentPoetryIndex(prev => (prev + 1) % teaPoetry.length);
+    }, 8000);
+    return () => clearInterval(interval);
   }, []);
 
   // =========================================================================
   // 泡茶阶段逻辑
   // =========================================================================
 
-  const handleAddWater = () => {
+  const addWater = () => {
     if (waterLevel < 100) {
-      setWaterLevel(prev => Math.min(100, prev + randInt(8, 15)));
+      const addAmount = Math.floor(Math.random() * 5) + 5; // 5-9之间的随机数
+      setWaterLevel(prev => Math.min(100, prev + addAmount));
     }
   };
 
-  const handleBrewFinish = () => {
-    if (brewTimerRef.current) return;
+  const startBrewing = () => {
+    if (brewTimer.current) return;
+    
     setBrewingProgress(0);
-    const brewInterval = setInterval(() => {
+    brewTimer.current = setInterval(() => {
       setBrewingProgress(prev => {
         if (prev >= 100) {
-          clearInterval(brewInterval);
+          clearInterval(brewTimer.current!);
           setGameStage('finished');
-          const waterScore = 100 - Math.abs(waterLevel - OPTIMAL_WATER_LEVEL) * 2;
+          // 计算泡茶评分
+          const waterScore = 100 - Math.min(100, Math.abs(waterLevel - OPTIMAL_WATER_LEVEL) * 2);
           setTeaQuality(prev => ({ ...prev, brewing: waterScore }));
           return 100;
         }
-        return prev + 5;
+        return prev + 1;
       });
-    }, 100);
-    brewTimerRef.current = brewInterval;
+    }, 50);
   };
 
   // =========================================================================
-  // 游戏结束逻辑和评分
+  // 游戏结束评分计算
   // =========================================================================
   useEffect(() => {
     if (gameStage === 'finished') {
-      const finalPickingScore = (pickedLeavesCount / REQUIRED_LEAVES) * 100;
-      const finalRoastingScore = (teaQuality.roasting / (ROAST_TIME_MS / 100)) * 100;
-      const finalBrewingScore = teaQuality.brewing;
-      const calculatedScore = (finalPickingScore * 0.4 + finalRoastingScore * 0.4 + finalBrewingScore * 0.2);
-      setFinalScore(Math.round(calculatedScore));
+      // 计算最终得分（权重分配）
+      const finalScore = Math.round(
+        teaQuality.picking * 0.4 + 
+        teaQuality.roasting * 0.4 + 
+        teaQuality.brewing * 0.2
+      );
+      setFinalScore(finalScore);
     }
-  }, [gameStage, pickedLeavesCount, teaQuality]);
+  }, [gameStage, teaQuality]);
 
+  // 重置游戏
   const resetGame = () => {
+    // 清理所有定时器
+    if (temperatureInterval.current) clearInterval(temperatureInterval.current);
+    if (roastTimer.current) clearInterval(roastTimer.current);
+    if (tempCheckTimer.current) clearInterval(tempCheckTimer.current);
+    if (brewTimer.current) clearInterval(brewTimer.current);
+    
+    // 重置所有状态
     setGameStage('picking');
-    setPickedLeavesCount(0);
     setRoastingProgress(0);
-    setRoastingTemp(0);
+    setTemperature(20);
     setWaterLevel(0);
     setBrewingProgress(0);
     setFinalScore(0);
     setTeaQuality({ picking: 0, roasting: 0, brewing: 0 });
-    setPickingTime(0);
-    if (sceneRef.current) {
-      sceneRef.current.children.forEach(obj => {
-          if (obj.type === 'Mesh' || obj.type === 'Group') {
-              sceneRef.current?.remove(obj);
-          }
-      });
-      leafMeshesRef.current = [];
-    }
+    setCurrentPhotoIndex(0);
+    setPerfectSeconds(0);
+    setIsHeating(false);
+    setFireParticles([]);
   };
 
-  const getPickingTimeComment = (time: number) => {
-    if (time < 10) return "速度极快！";
-    if (time < 20) return "手法熟练，恰到好处。";
-    return "中规中矩，稳扎稳打。";
-  };
-
+  // 渲染当前游戏阶段
   const renderCurrentStage = () => {
     switch (gameStage) {
       case 'picking':
@@ -698,41 +301,67 @@ export default function TeaPage() {
             <Card className="ancient-card p-6 mb-6 bg-gradient-to-br from-ivory-white to-rice-paper">
               <div className="text-center mb-4">
                 <Leaf className="w-12 h-12 text-bamboo-green mx-auto mb-2" />
-                <h2 className="text-xl font-bold ancient-title text-ink-black mb-2">采摘春茶</h2>
+                <h2 className="text-xl font-bold ancient-title text-ink-black mb-2">茶文化之旅</h2>
                 <p className="ancient-text text-deep-ink leading-relaxed text-sm">
-                  请旋转视角，找到并点击<strong className="text-bamboo-green">嫩芽（浅绿色）</strong>，收集{REQUIRED_LEAVES}片茶叶。
+                  请滑动浏览宋代茶文化图片，了解传统制茶工艺
                 </p>
-                <div className="flex items-center justify-center mt-2 text-xs text-deep-ink">
-                  <Move3d className="w-4 h-4 mr-1" />
-                  使用鼠标拖拽旋转视角，滚轮缩放
+              </div>
+              
+              {/* 照片浏览区域 */}
+              <div className="relative w-full h-64 bg-gray-100 rounded-lg overflow-hidden">
+                <div className="relative w-full h-full">
+                  <img 
+                    src={TEA_PHOTOS[currentPhotoIndex]} 
+                    className="w-full h-full object-cover transition-opacity duration-300"
+                    alt={`茶文化图片 ${currentPhotoIndex + 1}`}
+                  />
+                  
+                  {/* 导航按钮 */}
+                  <button 
+                    onClick={goToPrevPhoto}
+                    className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/30 hover:bg-black/50 text-white p-2 rounded-full z-10"
+                  >
+                    <ChevronLeft className="w-6 h-6" />
+                  </button>
+                  
+                  <button 
+                    onClick={goToNextPhoto}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/30 hover:bg-black/50 text-white p-2 rounded-full z-10"
+                  >
+                    <ChevronRight className="w-6 h-6" />
+                  </button>
+                  
+                  {/* 照片指示器 */}
+                  <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
+                    {TEA_PHOTOS.map((_, index) => (
+                      <div 
+                        key={index}
+                        className={`w-2 h-2 rounded-full ${
+                          index === currentPhotoIndex ? 'bg-bamboo-green' : 'bg-gray-300'
+                        }`}
+                      />
+                    ))}
+                  </div>
                 </div>
               </div>
-              <div ref={mountRef} className="w-full h-64 bg-gray-100 rounded-lg overflow-hidden relative">
-                {/* three.js canvas will be mounted here */}
+              
+              <div className="mt-4 text-center text-sm text-deep-ink">
+                {currentPhotoIndex + 1} / {TEA_PHOTOS.length}
               </div>
-              <div className="flex justify-between items-center mt-4 text-center text-sm font-semibold ancient-text text-deep-ink">
-                <div className="flex items-center space-x-2">
-                  <Clock className="w-4 h-4 text-ancient-gold" />
-                  <span>剩余时间: {Math.max(0, PICKING_TIME_LIMIT - pickingTime)}s</span>
-                </div>
-                <span>已收集：<span className="text-bamboo-green">{pickedLeavesCount} / {REQUIRED_LEAVES}</span></span>
-              </div>
+              
               <Button
                 onClick={() => {
-                  setTeaQuality(prev => ({ ...prev, picking: pickedLeavesCount }));
+                  setTeaQuality(prev => ({ ...prev, picking: 100 }));
                   setGameStage('roasting');
-                  if (pickingTimerRef.current) clearInterval(pickingTimerRef.current);
                 }}
-                disabled={pickedLeavesCount < REQUIRED_LEAVES}
-                className={`w-full mt-6 ancient-button text-lg ${
-                  pickedLeavesCount < REQUIRED_LEAVES ? 'bg-gray-300 cursor-not-allowed' : ''
-                }`}
+                className="w-full mt-6 ancient-button text-lg"
               >
                 继续炒茶 →
               </Button>
             </Card>
           </motion.div>
         );
+        
       case 'roasting':
         return (
           <motion.div
@@ -747,81 +376,72 @@ export default function TeaPage() {
                 <Flame className="w-12 h-12 text-cinnabar-red mx-auto mb-2" />
                 <h2 className="text-xl font-bold ancient-title text-ink-black mb-2">文火炒制</h2>
                 <p className="ancient-text text-deep-ink leading-relaxed text-sm">
-                  按住按钮煽火，将温度维持在<strong className="text-cinnabar-red">60°C - 80°C</strong>区间内，持续{ROAST_TIME_MS / 1000}秒。
+                  按住按钮加热，将温度维持在<strong className="text-cinnabar-red">{IDEAL_TEMP_MIN}°C - {IDEAL_TEMP_MAX}°C</strong>区间内，持续{totalRoastSeconds}秒。
                 </p>
               </div>
+              
+              {/* 炒茶区域 */}
               <div className="relative w-full h-64 flex items-center justify-center">
-                <div className="absolute bottom-8 w-40 h-20 bg-gradient-to-b from-gray-600 to-gray-800 rounded-full border-4 border-bronze-gold shadow-lg" />
-                <div className="absolute bottom-12 w-32 h-16">
-                  {Array.from({ length: pickedLeavesCount }).map((_, i) => (
-                    <motion.div
-                      key={i}
-                      className="absolute w-2 h-1 bg-bamboo-green rounded-full"
-                      style={{
-                        left: `${Math.random() * 100}%`,
-                        top: `${Math.random() * 100}%`,
-                      }}
-                      animate={{
-                        scale: isStirring ? [1, 0.8, 1] : 1,
-                        rotate: isStirring ? [0, 180, 360] : 0,
-                      }}
-                      transition={{
-                        duration: 1,
-                        repeat: isStirring ? Number.POSITIVE_INFINITY : 0,
-                        delay: i * 0.1,
-                      }}
-                    />
-                  ))}
-                </div>
-                {isStirring && (
-                  <div className="absolute bottom-20">
-                    {fireParticles.map((_, i) => (
-                      <motion.div
-                        key={i}
-                        className="absolute w-1 h-6 bg-gradient-to-t from-orange-500 to-yellow-300 rounded-full"
-                        style={{ left: `${randFloat(-10, 10)}px`, bottom: "0px" }}
-                        animate={{ 
-                          height: [8, 24, 8], 
-                          opacity: [0.8, 0.3, 0.8], 
-                          y: [0, -randFloat(10, 30), 0] 
-                        }}
-                        transition={{ 
-                          duration: randFloat(1, 2.5), 
-                          repeat: Number.POSITIVE_INFINITY, 
-                          delay: i * randFloat(0.1, 0.4) 
-                        }}
-                      />
-                    ))}
+                <div className="relative w-full h-full max-w-md mx-auto">
+                  {/* 熔炉照片 */}
+                  <img 
+                    src={getFurnacePhoto()} 
+                    className="w-full h-full object-cover rounded-lg shadow-md"
+                    alt={`炒茶熔炉 (${temperature.toFixed(1)}°C)`}
+                  />
+                  
+                  {/* 火焰效果 */}
+                  {isHeating && (
+                    <div className="absolute bottom-10 left-1/2 transform -translate-x-1/2 w-32 h-24 pointer-events-none">
+                      {fireParticles.map((_, i) => (
+                        <motion.div
+                          key={i}
+                          className="absolute w-1 h-6 bg-gradient-to-t from-orange-500 to-yellow-300 rounded-full"
+                          style={{ left: `${randFloat(-40, 40)}px`, bottom: "0px" }}
+                          animate={{ 
+                            height: [8, 24, 8], 
+                            opacity: [0.8, 0.3, 0.8], 
+                            y: [0, -randFloat(10, 30), 0] 
+                          }}
+                          transition={{ 
+                            duration: randFloat(1, 2.5), 
+                            repeat: Number.POSITIVE_INFINITY, 
+                            delay: i * randFloat(0.1, 0.4) 
+                          }}
+                        />
+                      ))}
+                    </div>
+                  )}
+                  
+                  {/* 温度计 */}
+                  <div className="absolute top-4 left-1/2 transform -translate-x-1/2 w-64 h-8 bg-gray-200 rounded-full flex items-center overflow-hidden">
+                    <div className="h-full bg-gradient-to-r from-green-400 to-yellow-400 rounded-full transition-all duration-300" style={{ 
+                      width: `${IDEAL_TEMP_MAX - IDEAL_TEMP_MIN}%`, 
+                      marginLeft: `${IDEAL_TEMP_MIN}%` 
+                    }}></div>
+                    <div className="absolute h-full bg-gradient-to-r from-blue-400 via-yellow-500 to-red-600 rounded-full transition-all duration-300" style={{ width: `${temperature}%` }}></div>
+                    <p className="absolute left-1/2 -translate-x-1/2 text-sm text-white font-bold drop-shadow-[0_1px_1px_rgba(0,0,0,0.8)]">
+                      {temperature.toFixed(1)}°C
+                    </p>
                   </div>
-                )}
-                
-                {/* 温度计 */}
-                <div className="absolute top-4 left-1/2 transform -translate-x-1/2 w-48 h-8 bg-gray-200 rounded-full flex items-center overflow-hidden">
-                  <div className="h-full bg-gradient-to-r from-green-400 to-yellow-400 rounded-full transition-all duration-300" style={{ 
-                    width: `${PERFECT_ROAST_TEMP_MAX - PERFECT_ROAST_TEMP_MIN}%`, 
-                    marginLeft: `${PERFECT_ROAST_TEMP_MIN}%` 
-                  }}></div>
-                  <div className="absolute h-full bg-gradient-to-r from-yellow-500 to-red-600 rounded-full transition-all duration-300" style={{ width: `${roastingTemp}%` }}></div>
-                  <p className="absolute left-1/2 -translate-x-1/2 text-sm text-white font-bold drop-shadow-[0_1px_1px_rgba(0,0,0,0.8)]">
-                    {roastingTemp}°C
-                  </p>
                 </div>
-                <div className="absolute top-1/2 -translate-y-1/2 w-24 h-24 bg-gray-700 rounded-full animate-pulse" />
               </div>
 
               <div className="space-y-3 mt-4">
                 <Button
-                  onMouseDown={handleFireUp}
-                  onMouseUp={handleFireDown}
-                  onTouchStart={handleFireUp}
-                  onTouchEnd={handleFireDown}
+                  onMouseDown={startHeating}
+                  onMouseUp={stopHeating}
+                  onTouchStart={startHeating}
+                  onTouchEnd={stopHeating}
                   disabled={roastingProgress >= 100}
                   className={`w-full ancient-button text-lg py-3 ${
-                    isStirring ? 'bg-cinnabar-red hover:bg-red-700' : ''
+                    isHeating ? 'bg-cinnabar-red hover:bg-red-700' : ''
                   }`}
                 >
-                  {roastingProgress >= 100 ? "炒制完成" : isStirring ? "煽火中..." : "煽火控制"}
+                  {roastingProgress >= 100 ? "炒制完成" : isHeating ? "加热中..." : "按住加热"}
                 </Button>
+                
+                {/* 进度条 */}
                 <div className="ancient-progress h-3 relative mt-4 rounded-full overflow-hidden">
                   <motion.div
                     className="absolute inset-0 bg-gradient-to-r from-bamboo-green to-jade-green rounded-full"
@@ -829,11 +449,17 @@ export default function TeaPage() {
                     transition={{ duration: 0.3 }}
                   />
                 </div>
-                <p className="text-center text-xs mt-2 ancient-text text-deep-ink">炒制进度: {Math.round(roastingProgress)}%</p>
+                
+                {/* 状态信息 */}
+                <div className="flex justify-between text-xs mt-1 ancient-text text-deep-ink">
+                  <span>炒制进度: {Math.round(roastingProgress)}%</span>
+                  <span>完美时间: {perfectSeconds.toFixed(1)}s</span>
+                </div>
               </div>
             </Card>
           </motion.div>
         );
+        
       case 'brewing':
         return (
           <motion.div
@@ -848,9 +474,10 @@ export default function TeaPage() {
                 <Coffee className="w-12 h-12 text-bronze-gold mx-auto mb-2" />
                 <h2 className="text-xl font-bold ancient-title text-ink-black mb-2">品茗之乐</h2>
                 <p className="ancient-text text-deep-ink leading-relaxed text-sm">
-                  请按"加水"按钮，将水加到合适的位置，然后点击"泡茶"。
+                  请按"加水"按钮，将水加到合适的位置（最佳水位: {OPTIMAL_WATER_LEVEL}%），然后点击"泡茶"。
                 </p>
               </div>
+              
               <div className="relative w-full h-64 flex items-center justify-center">
                 <div className="relative w-36 h-40 bg-gray-100 rounded-b-full border-4 border-gray-400 overflow-hidden">
                   <motion.div
@@ -870,16 +497,17 @@ export default function TeaPage() {
                   水位: {waterLevel}%
                 </div>
               </div>
+              
               <div className="space-y-3 mt-4">
                 <Button
-                  onClick={handleAddWater}
+                  onClick={addWater}
                   disabled={waterLevel >= 100}
                   className="w-full ancient-button text-lg py-3"
                 >
-                  加水 (+{randInt(8, 15)}%)
+                  加水
                 </Button>
                 <Button
-                  onClick={handleBrewFinish}
+                  onClick={startBrewing}
                   disabled={brewingProgress > 0 || waterLevel === 0}
                   className="w-full ancient-button text-lg py-3 bg-bamboo-green hover:bg-jade-green"
                 >
@@ -889,9 +517,10 @@ export default function TeaPage() {
             </Card>
           </motion.div>
         );
+        
       case 'finished':
-        const pickingScore = Math.round((pickedLeavesCount / REQUIRED_LEAVES) * 100);
-        const roastingScore = Math.round((teaQuality.roasting / (ROAST_TIME_MS / 100)) * 100);
+        const pickingScore = 100;
+        const roastingScore = Math.round(teaQuality.roasting);
         const brewingScore = Math.round(teaQuality.brewing);
         
         return (
@@ -917,25 +546,27 @@ export default function TeaPage() {
                   {finalScore}
                 </motion.div>
                 <p className="ancient-text text-deep-ink mb-6">
-                  {finalScore >= 80 ? "茶香四溢，妙手回春！" : finalScore >= 60 ? "滋味尚可，再接再厉！" : "茶汤略淡，仍需钻研。"}
+                  {finalScore >= 80 ? "茶香四溢，妙手回春！" : 
+                   finalScore >= 60 ? "滋味尚可，再接再厉！" : 
+                   "茶汤略淡，仍需钻研。"}
                 </p>
                 
                 {/* 详细评分 */}
                 <div className="grid grid-cols-3 gap-4 mb-6">
                   <div className="bg-white/80 p-3 rounded-lg shadow-sm">
-                    <div className="text-bamboo-green font-bold">采摘</div>
+                    <div className="text-bamboo-green font-bold">文化学习</div>
                     <div className="text-2xl font-bold">{pickingScore}</div>
-                    <div className="text-xs text-gray-600">{pickedLeavesCount}/{REQUIRED_LEAVES}片</div>
+                    <div className="text-xs text-gray-600">满分</div>
                   </div>
                   <div className="bg-white/80 p-3 rounded-lg shadow-sm">
                     <div className="text-cinnabar-red font-bold">炒制</div>
                     <div className="text-2xl font-bold">{roastingScore}</div>
-                    <div className="text-xs text-gray-600">{Math.round(roastingScore)}%完美</div>
+                    <div className="text-xs text-gray-600">完美时间: {perfectSeconds.toFixed(1)}s</div>
                   </div>
                   <div className="bg-white/80 p-3 rounded-lg shadow-sm">
                     <div className="text-bronze-gold font-bold">冲泡</div>
                     <div className="text-2xl font-bold">{brewingScore}</div>
-                    <div className="text-xs text-gray-600">水位{waterLevel}%</div>
+                    <div className="text-xs text-gray-600">水位: {waterLevel}%</div>
                   </div>
                 </div>
                 
@@ -998,6 +629,34 @@ export default function TeaPage() {
         .ancient-text {
           font-family: 'KaiTi', serif;
         }
+        /* 自定义颜色 */
+        .bamboo-green {
+          color: #2e7d32;
+        }
+        .jade-green {
+          color: #00a86b;
+        }
+        .cinnabar-red {
+          color: #c53030;
+        }
+        .bronze-gold {
+          color: #cd7f32;
+        }
+        .ancient-gold {
+          color: #d4af37;
+        }
+        .ink-black {
+          color: #2d2d2d;
+        }
+        .deep-ink {
+          color: #3d3d3d;
+        }
+        .ivory-white {
+          color: #fffff0;
+        }
+        .rice-paper {
+          color: #f5f5f0;
+        }
       `}</style>
       <div className="absolute inset-0">
         <svg className="absolute bottom-0 w-full h-32" viewBox="0 0 430 128" fill="none">
@@ -1056,3 +715,13 @@ export default function TeaPage() {
     </div>
   );
 }
+
+// 辅助函数
+function randInt(min: number, max: number): number {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function randFloat(min: number, max: number): number {
+  return Math.random() * (max - min) + min;
+}
+    
