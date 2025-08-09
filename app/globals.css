@@ -253,3 +253,20 @@ body {
 .ancient-shadow {
   box-shadow: 0 4px 16px rgba(212, 175, 55, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.3);
 }
+/* 首页顶部标题 */
+.badge-container {
+  display: inline-block;
+  position: relative;
+  padding: 1.2rem 2rem; 
+}
+.badge-background {
+  width: 300px; /* 可按需调整标签宽高 */
+  height: 60px;
+  background: linear-gradient(to right, #b58257, #d9b38c); 
+  border: 2px solid #8b5a2b;
+  border-radius: 12px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+.ancient-title {
+  font-family: "SimSun", serif; /* 模拟类似古籍字体，可替换成你想要的复古字体 */
+}
