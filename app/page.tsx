@@ -115,6 +115,7 @@ export default function HomePage() {
   // 如果未登录，显示加载或欢迎动画
   if (!loggedInUser && showWelcome) {
     return (
+      // 欢迎动画模块
       <AnimatePresence>
         <motion.div
           initial={{ opacity: 0 }}
@@ -130,9 +131,10 @@ export default function HomePage() {
               initial={{ scale: 0, rotate: -180 }}
               animate={{ scale: 1, rotate: 0 }}
               transition={{ duration: 1, ease: "easeOut" }}
-              className="w-32 h-32 mx-auto mb-6 bg-gradient-to-br from-ancient-gold to-bronze-gold rounded-full flex items-center justify-center text-4xl font-bold"
+              className="text-4xl font-bold text-ancient-gold 
+              tracking-wide font-['KaiTi']"
               >
-              临安录
+              臨安錄
             </motion.div>
             <motion.h1
               initial={{ opacity: 0, y: 50 }}
