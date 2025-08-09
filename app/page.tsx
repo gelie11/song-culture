@@ -29,7 +29,7 @@ export default function HomePage() {
     {
       id: "porcelain",
       title: "青瓷雅韵",
-      subtitle: "宋窑神工",
+      // subtitle: "宋窑神工",
       icon: "🏺",
       path: "/porcelain",
       color: "from-jade-green to-deep-jade",
@@ -38,7 +38,7 @@ export default function HomePage() {
     {
       id: "tea",
       title: "茶禅一味",
-      subtitle: "东坡品茗",
+      // subtitle: "东坡品茗",
       icon: "🍵",
       path: "/tea",
       color: "from-bamboo-green to-jade-green",
@@ -47,7 +47,7 @@ export default function HomePage() {
     {
       id: "silk",
       title: "锦绣华章",
-      subtitle: "丝路织梦",
+      // subtitle: "丝路织梦",
       icon: "🧵",
       path: "/silk",
       color: "from-plum-purple to-cinnabar-red",
@@ -56,7 +56,7 @@ export default function HomePage() {
     {
       id: "poetry",
       title: "诗词风雅",
-      subtitle: "墨韵千秋",
+      // subtitle: "墨韵千秋",
       icon: "📜",
       path: "/poetry",
       color: "from-ink-black to-deep-ink",
@@ -65,13 +65,26 @@ export default function HomePage() {
     {
       id: "drama",
       title: "梨园春秋",
-      subtitle: "脸谱传神",
+      // subtitle: "脸谱传神",
       icon: "🎭",
       path: "/drama",
       color: "from-cinnabar-red to-deep-red",
       description: "探索戏曲艺术的魅力",
     },
+    {
+      id: "report",
+      title: "宋韵报告",
+      subtitle: "解锁成就",
+      icon: "🔒",
+      path: "/report",
+      color: "from-gray-400 to-gray-500",
+      description: "完成全部体验后解锁",
+      locked: true,
+    },
   ]
+  // 记录已点击模块
+  const [clickedModules, setClickedModules] = useState<Set<string>>(new Set());
+  const [reportUnlocked, setReportUnlocked] = useState(false);
 
   useEffect(() => {
     // 检查登录状态
@@ -111,7 +124,20 @@ export default function HomePage() {
     localStorage.removeItem("loggedInUser"); // 清除登录状态
     router.push("/login"); // 重定向到登录页面
   };
-
+  // 处理模块点击
+  const handleModuleClick = (id: string, path: string, locked?: boolean) => {
+    if (id === "report" && !reportUnlocked) return;
+    if (id !== "report") {
+      setClickedModules((prev) => {
+        const next = new Set(prev);
+        next.add(id);
+        // 如果五个模块都点过，解锁 report
+        if (next.size === 5) setReportUnlocked(true);
+        return next;
+      });
+    }
+    router.push(path);
+  };
   // 如果未登录，显示加载或欢迎动画
   if (!loggedInUser && showWelcome) {
     return (
@@ -228,19 +254,21 @@ export default function HomePage() {
           </motion.button>
         </div>
         
-        {/* 顶部标题区域 */}
+        {/* 顶部标题区域 */} 
         <motion.div
-          initial={{ opacity: 0, y: -50 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          className="text-center mb-8"
-        >
-          <div className="relative">
-            <h1 className="text-4xl font-bold ancient-title mb-4 text-black">宋韵漫游</h1> {/* 文字颜色改为黑色 */}
-            <div className="w-24 h-1 bg-gradient-to-r from-ancient-gold to-bronze-gold mx-auto rounded-full" />
-          </div>
-        </motion.div>
-
+      initial={{ opacity: 0, y: -20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.8 }}
+      className="text-center mb-8"
+    >
+      <div className="relative badge-container">
+        {/* 模拟复古标签背景 */}
+        <div className="badge-background" /> 
+        <h2 className="text-3xl font-bold ancient-title text-white absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+          宋韵漫游
+        </h2>
+      </div>
+    </motion.div>
         {/* 诗词轮播区域 */}
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
@@ -248,8 +276,14 @@ export default function HomePage() {
           transition={{ delay: 0.2, duration: 0.8 }}
           className="mb-8"
         >
-          <Card className="ancient-card p-6 text-center bg-white/10 backdrop-blur-sm shadow-lg border border-gray-200"> {/* 修改为更透明的背景 */}
-            <div className="h-16 flex items-center justify-center">
+          <Card className="ancient-card p-6 text-center bg-white/10 backdrop-blur-sm shadow-lg border border-gray-200 max-w-md mx-auto"
+          style={{
+            maxWidth: "400px",
+            margin: "0 auto",
+            maxHeight: "80px",
+          }}
+          > {/* 修改为更透明的背景 */}
+            <div className="h-10 flex items-center justify-center">
               <AnimatePresence mode="wait">
                 <motion.p
                   key={currentPoetry}
@@ -276,42 +310,61 @@ export default function HomePage() {
           </Card>
         </motion.div>
 
-        {/* 文化模块网格 */}
+        {/* 文化模块网格：三行两列布局，report初始锁定，全部一屏展示 */}
         <motion.div
-          initial={{ opacity: 0, y: 50 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4, duration: 0.8 }}
-          className="space-y-4 mb-8"
-        >
-          {culturalModules.map((module, index) => (
-            <motion.div
-              key={module.id}
-              initial={{ opacity: 0, x: index % 2 === 0 ? -50 : 50 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.6 + index * 0.2, duration: 0.6 }}
-            >
-              <Link href={module.path}>
-                <Card className="ancient-card p-6 hover:shadow-xl transition-all duration-300 cursor-pointer group bg-white/10 backdrop-blur-sm shadow-lg border border-gray-200"> {/* 修改为更透明的背景 */}
-                  <div className="flex items-center space-x-4">
-                    <div
-                      className={`w-16 h-16 rounded-full bg-gradient-to-br ${module.color} flex items-center justify-center text-2xl group-hover:scale-110 transition-transform duration-300`}
-                    >
-                      {module.icon}
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="text-xl font-bold ancient-title text-ink-black mb-1">{module.title}</h3>
-                      <p className="text-sm text-ancient-gold font-medium mb-2">{module.subtitle}</p>
-                      <p className="text-sm ancient-text text-deep-ink">{module.description}</p>
-                    </div>
-                    <div className="text-ancient-gold group-hover:translate-x-2 transition-transform duration-300">
-                      →
-                    </div>
-                  </div>
-                </Card>
-              </Link>
-            </motion.div>
-          ))}
-        </motion.div>
+  initial={{ opacity: 0, y: 50 }}
+  animate={{ opacity: 1, y: 0 }}
+  transition={{ delay: 0.4, duration: 0.8 }}
+  className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8" // 用gap-4更宽松
+  style={{ maxWidth: "800px", margin: "0 auto", minHeight: "10vh" }} // 宽度加大到800px
+>
+  {culturalModules.map((module, index) => {
+    const isReport = module.id === "report";
+    const unlocked = reportUnlocked;
+    return (
+      <motion.div
+        key={module.id}
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ delay: 0.6 + index * 0.1, duration: 0.5 }}
+      >
+        <div
+  className={`ancient-card p-4 flex min-h-[140px] flex-col gap-2 cursor-pointer group bg-white/10 backdrop-blur-sm shadow-lg border border-gray-200 transition-all duration-300
+    ${isReport && !unlocked ? "opacity-60 bg-gray-200 cursor-not-allowed" : "hover:shadow-xl"}`}
+  onClick={() => handleModuleClick(module.id, module.path, isReport && !unlocked)}
+  style={{ pointerEvents: isReport && !unlocked ? "none" : "auto" }}
+>
+  {/* 标题单独占一行 */}
+  <h3 className={`text-center text-lg font-bold ${isReport && !unlocked ? "text-gray-500" : "text-ink-black"}`}>
+    {module.title}
+  </h3>
+
+  {/* 图标 + 副标题 + 描述 一行 */}
+  <div className="flex items-center gap-3">
+    <div
+      className={`w-12 h-12 rounded-full bg-gradient-to-br ${isReport && !unlocked ? "from-gray-400 to-gray-500" : module.color} flex items-center justify-center text-2xl`}
+    >
+      {isReport && !unlocked ? "🔒" : module.icon}
+    </div>
+    <div className="flex-1">
+      <p className={`text-sm font-medium ${isReport && !unlocked ? "text-gray-400" : "text-ancient-gold"}`}>
+        {module.subtitle}
+      </p>
+      <p className={`text-sm ${isReport && !unlocked ? "text-gray-400" : "text-deep-ink"}`}>
+        {module.description}
+      </p>
+    </div>
+    <div className={`transition-transform duration-300 ${isReport && !unlocked ? "text-gray-400" : "text-ancient-gold group-hover:translate-x-2"}`}>
+      {isReport && !unlocked ? "" : "→"}
+    </div>
+  </div>
+</div>
+
+      </motion.div>
+    );
+  })}
+</motion.div>
+
 
         {/* 东坡形象区域 */}
         <motion.div
