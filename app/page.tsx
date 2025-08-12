@@ -1,6 +1,18 @@
-"use client"; // 标记为客户端组件
+"use client";
 
+<<<<<<< HEAD
 import { useState, useEffect,useRef, use } from "react"
+=======
+import { useState, useEffect, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Card } from "@/components/ui/card";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+
+<<<<<<< HEAD
+=======
+import { useState, useEffect } from "react"
+>>>>>>> f1178ed2b97464b0c8c4bd1d7c7dee88813a04d9
 import { motion, AnimatePresence } from "framer-motion"
 // Card
 import { Card } from "@/components/ui/card"
@@ -10,6 +22,7 @@ import { useRouter } from "next/navigation"
  * 应用主页组件
  * 该组件会根据用户登录状态进行渲染，未登录时重定向到认证页面。
  */
+>>>>>>> a1df47dfa5971ed52cd6542d0ee04a73178584f6
 export default function HomePage() {
   const [currentPoetry, setCurrentPoetry] = useState(0);
   const [showWelcome, setShowWelcome] = useState(true);
@@ -26,13 +39,13 @@ export default function HomePage() {
     "我欲乘风归去，又恐琼楼玉宇",
     "高处不胜寒，起舞弄清影",
     "何似在人间",
-  ]
+  ];
 
   const culturalModules = [
     {
       id: "porcelain",
       title: "青瓷雅韵",
-      // subtitle: "宋窑神工",
+      subtitle: "宋窑神工",
       icon: "🏺",
       image: "/culturalModel/porcelain.png",
       path: "/porcelain",
@@ -42,7 +55,7 @@ export default function HomePage() {
     {
       id: "tea",
       title: "茶禅一味",
-      // subtitle: "东坡品茗",
+      subtitle: "东坡品茗",
       icon: "🍵",
       image: "/culturalModel/tea.png",
       path: "/tea",
@@ -52,7 +65,7 @@ export default function HomePage() {
     {
       id: "silk",
       title: "锦绣华章",
-      // subtitle: "丝路织梦",
+      subtitle: "丝路织梦",
       icon: "🧵",
       image: "/culturalModel/silk.png",
       path: "/silk",
@@ -62,7 +75,7 @@ export default function HomePage() {
     {
       id: "poetry",
       title: "诗词风雅",
-      // subtitle: "墨韵千秋",
+      subtitle: "墨韵千秋",
       icon: "📜",
       image: "/culturalModel/poetry.png",
       path: "/poetry",
@@ -72,13 +85,16 @@ export default function HomePage() {
     {
       id: "drama",
       title: "梨园春秋",
-      // subtitle: "脸谱传神",
+      subtitle: "脸谱传神",
       icon: "🎭",
       path: "/drama",
       image: "/culturalModel/drama.png",
       color: "from-cinnabar-red to-deep-red",
       description: "探索戏曲艺术的魅力",
     },
+<<<<<<< HEAD
+  ];
+=======
     {
       id: "report",
       title: "宋韵报告",
@@ -94,15 +110,22 @@ export default function HomePage() {
   // 记录已点击模块
   const [clickedModules, setClickedModules] = useState<Set<string>>(new Set());
   const [reportUnlocked, setReportUnlocked] = useState(false);
+>>>>>>> a1df47dfa5971ed52cd6542d0ee04a73178584f6
 
   useEffect(() => {
+<<<<<<< HEAD
     // 检查登录状态
+=======
+>>>>>>> f1178ed2b97464b0c8c4bd1d7c7dee88813a04d9
     const userJson = localStorage.getItem("loggedInUser");
     if (userJson) {
       try {
         const user = JSON.parse(userJson);
         setUserData(user);
+<<<<<<< HEAD
         console.log("用户数据:", user);
+=======
+>>>>>>> f1178ed2b97464b0c8c4bd1d7c7dee88813a04d9
         setShowWelcome(false);
       } catch (error) {
         console.error("解析用户数据失败:", error);
@@ -115,26 +138,34 @@ export default function HomePage() {
       }, 2000);
       return () => clearTimeout(welcomeTimer);
     }
+<<<<<<< HEAD
+
+=======
     // 诗词轮播
+>>>>>>> a1df47dfa5971ed52cd6542d0ee04a73178584f6
     const poetryTimer = setInterval(() => {
       setCurrentPoetry((prev) => (prev + 1) % poetryLines.length);
-    }, 3000)
+    }, 3000);
 
-    // 生成水墨滴落效果
     const drops = Array.from({ length: 8 }, (_, i) => ({
       id: i,
       x: Math.random() * 100,
       y: Math.random() * 100,
-    }))
-    setInkDrops(drops)
+    }));
+    setInkDrops(drops);
 
     return () => {
-      clearInterval(poetryTimer)
-    }
+      clearInterval(poetryTimer);
+    };
   }, [router]);
+<<<<<<< HEAD
   useEffect(() => {
     console.log("用户数据已更新:", userData);
   }, [userData]);
+=======
+<<<<<<< HEAD
+
+>>>>>>> f1178ed2b97464b0c8c4bd1d7c7dee88813a04d9
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (settingsRef.current && !settingsRef.current.contains(event.target as Node)) {
@@ -147,10 +178,20 @@ export default function HomePage() {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
+<<<<<<< HEAD
+=======
+
+=======
+>>>>>>> a1df47dfa5971ed52cd6542d0ee04a73178584f6
+>>>>>>> f1178ed2b97464b0c8c4bd1d7c7dee88813a04d9
   const handleLogout = () => {
-    localStorage.removeItem("loggedInUser"); // 清除登录状态
-    router.push("/login"); // 重定向到登录页面
+    localStorage.removeItem("loggedInUser");
+    router.push("/login");
   };
+<<<<<<< HEAD
+=======
+
+>>>>>>> f1178ed2b97464b0c8c4bd1d7c7dee88813a04d9
   // 修改头像功能
   const handleAvatarChange = (selectedAvatar: string) => {
     if (userData) {
@@ -165,6 +206,7 @@ export default function HomePage() {
       localStorage.setItem("loggedInUser", JSON.stringify(updatedUser));
       
       setShowAvatarModal(false);
+<<<<<<< HEAD
     }
   };
 
@@ -186,13 +228,25 @@ export default function HomePage() {
         if (next.size === 5) setReportUnlocked(true);
         return next;
       });
+=======
+>>>>>>> f1178ed2b97464b0c8c4bd1d7c7dee88813a04d9
     }
-    router.push(path);
   };
+<<<<<<< HEAD
   // 如果未登录，显示加载或欢迎动画
+=======
+
+  // 生成随机头像
+  const generateRandomAvatar = (): string => {
+    const timestamp = Date.now();
+    const randomString = Math.random().toString(36).substring(2, 10);
+    return `https://i.pravatar.cc/150?u=${timestamp}-${randomString}`;
+  };
+
+  // 欢迎动画
+>>>>>>> f1178ed2b97464b0c8c4bd1d7c7dee88813a04d9
   if (!userData && showWelcome) {
     return (
-      // 欢迎动画模块
       <AnimatePresence>
         <motion.div
           initial={{ opacity: 0 }}
@@ -203,8 +257,14 @@ export default function HomePage() {
             backgroundImage: "url('wel.png')",
           }}
         >
+<<<<<<< HEAD
           <div className="absolute inset-0 bg-black/20 z-0" />
             <div className="relative z-10 text-center">
+=======
+          <div className="text-center">
+<<<<<<< HEAD
+=======
+>>>>>>> f1178ed2b97464b0c8c4bd1d7c7dee88813a04d9
             <motion.div
               initial={{ scale: 0, rotate: -180 }}
               animate={{ scale: 1, rotate: 0 }}
@@ -214,6 +274,7 @@ export default function HomePage() {
             >
               宋韵漫游
             </motion.div>
+>>>>>>> a1df47dfa5971ed52cd6542d0ee04a73178584f6
             <motion.h1
               initial={{ opacity: 0, y: 50 }}
               animate={{ opacity: 1, y: 0 }}
@@ -228,15 +289,25 @@ export default function HomePage() {
     );
   }
 
+<<<<<<< HEAD
   if (!userData) {
+=======
+<<<<<<< HEAD
+  if (!userData) {
+    return null;
+  }
+
+=======
+  if (!loggedInUser) {
+>>>>>>> f1178ed2b97464b0c8c4bd1d7c7dee88813a04d9
     // 欢迎动画结束后但未登录时，不渲染任何内容，等待重定向
     return null;
   }
   // 正常主页内容
+>>>>>>> a1df47dfa5971ed52cd6542d0ee04a73178584f6
   return (
     <div
-      className="min-h-screen relative overflow-hidden bg-cover bg-center font-inter bg-gray-50" // 使用更柔和的背景色，模拟背景图的浅色调
-      // 使用占位符图片作为背景，以更好地适应不同屏幕
+      className="min-h-screen relative overflow-hidden bg-cover bg-center font-inter bg-gray-50"
       style={{ backgroundImage: `url('chushijiemian.jpg')` }}
     >
       <style jsx global>{`
@@ -245,21 +316,13 @@ export default function HomePage() {
           opacity: 0.1;
           pointer-events: none;
         }
-        @keyframes fadeIn {
-          from { opacity: 0; }
-          to { opacity: 1; }
-        }
-        .animate-fade-in {
-          animation: fadeIn 1s ease-in-out;
-        }
       `}</style>
       <div className="absolute inset-0 ancient-pattern" />
 
-      {/* 水墨滴落效果 */}
       {inkDrops.map((drop) => (
         <motion.div
           key={drop.id}
-          className="absolute w-3 h-3 rounded-full bg-slate-300 opacity-20 ink-drop" // 将水墨滴落效果颜色调整为更浅的灰色
+          className="absolute w-3 h-3 rounded-full bg-slate-300 opacity-20 ink-drop"
           style={{
             left: `${drop.x}%`,
             top: `${drop.y}%`,
@@ -275,11 +338,26 @@ export default function HomePage() {
           }}
         />
       ))}
+<<<<<<< HEAD
       {/* 内容区域 */}
       <div className="relative z-10 p-6 min-h-screen flex flex-col">
         {/* 顶部用户信息 */}
         <div className="mb-0.5 flex justify-between items-center">
             <motion.div
+=======
+<<<<<<< HEAD
+
+      {/* 内容区域 */}
+      <div className="relative z-10 p-6 min-h-screen flex flex-col">
+        {/* 顶部头像和账号信息 */}
+        <div className="mb-8 flex justify-between items-center">
+=======
+      <div className="relative z-10 p-6">
+        {/*顶部用户信息 */}
+        <div className="flex justify-between items-center mb-1">
+>>>>>>> a1df47dfa5971ed52cd6542d0ee04a73178584f6
+          <motion.div
+>>>>>>> f1178ed2b97464b0c8c4bd1d7c7dee88813a04d9
             initial={{ opacity: 0, x: -50 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8 }}
@@ -295,21 +373,44 @@ export default function HomePage() {
               <div className="w-12 h-12 rounded-full bg-gradient-to-br from-ancient-gold to-bronze-gold flex items-center justify-center text-white text-xl font-bold">
                 {userData.username?.charAt(0)}
               </div>
+<<<<<<< HEAD
             )}<div className="ml-3">
+=======
+            )}
+            <div className="ml-3">
+>>>>>>> f1178ed2b97464b0c8c4bd1d7c7dee88813a04d9
               <p className="text-sm text-gray-700">{userData.username}</p>
               <p className="text-xs text-gray-500">账号: {userData.account}</p>
             </div>
           </motion.div>
         </div>
 
+<<<<<<< HEAD
 
+=======
+<<<<<<< HEAD
+        {/* 标题区域 */}
+        <motion.div
+          initial={{ opacity: 0, y: -50 }}
+=======
+>>>>>>> f1178ed2b97464b0c8c4bd1d7c7dee88813a04d9
         {/* 顶部标题区域 */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
+>>>>>>> a1df47dfa5971ed52cd6542d0ee04a73178584f6
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
           className="text-center mb-1"
         >
+<<<<<<< HEAD
+          <div className="relative">
+            <h1 className="text-4xl font-bold ancient-title mb-4 text-black">宋韵漫游</h1>
+            <div className="w-24 h-1 bg-gradient-to-r from-ancient-gold to-bronze-gold mx-auto rounded-full" />
+          </div>
+        </motion.div>
+
+        {/* 诗词轮播 */}
+=======
           <div className="relative badge-container">
             {/* 模拟复古标签背景 */}
             <div className="badge-background" />
@@ -319,12 +420,17 @@ export default function HomePage() {
           </div>
         </motion.div>
         {/* 诗词轮播区域 */}
+>>>>>>> a1df47dfa5971ed52cd6542d0ee04a73178584f6
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.2, duration: 0.8 }}
           className="mb-1"
         >
+<<<<<<< HEAD
+          <Card className="ancient-card p-6 text-center bg-white/20 backdrop-blur-sm shadow-lg border border-white/30">
+            <div className="h-16 flex items-center justify-center">
+=======
           <Card className="p-6 text-center max-w-md mx-auto bg-transparent border-none"
             style={{
               maxWidth: "400px",
@@ -333,6 +439,7 @@ export default function HomePage() {
             }}
           > {/* 修改为更透明的背景 */}
             <div className="h-10 flex items-center justify-center">
+>>>>>>> a1df47dfa5971ed52cd6542d0ee04a73178584f6
               <AnimatePresence mode="wait">
                 <motion.p
                   key={currentPoetry}
@@ -358,18 +465,63 @@ export default function HomePage() {
           </Card>
         </motion.div>
 
-        {/* 文化模块网格：三行两列布局，report初始锁定，全部一屏展示 */}
+        {/* 文化模块 */}
         <motion.div
+<<<<<<< HEAD
+          initial={{ opacity: 0, y: 50 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4, duration: 0.8 }}
+          className="space-y-4 mb-8"
+        >
+          {culturalModules.map((module, index) => (
+            <motion.div
+              key={module.id}
+              initial={{ opacity: 0, x: index % 2 === 0 ? -50 : 50 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.6 + index * 0.2, duration: 0.6 }}
+            >
+              <Link href={module.path}>
+                <Card className="ancient-card p-6 hover:shadow-xl transition-all duration-300 cursor-pointer group bg-white/20 backdrop-blur-sm shadow-lg border border-white/30">
+                  <div className="flex items-center space-x-4">
+                    <div
+                      className={`w-16 h-16 rounded-full bg-gradient-to-br ${module.color} flex items-center justify-center text-2xl group-hover:scale-110 transition-transform duration-300`}
+                    >
+                      {module.icon}
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-xl font-bold ancient-title text-ink-black mb-1">{module.title}</h3>
+                      <p className="text-sm text-ancient-gold font-medium mb-2">{module.subtitle}</p>
+                      <p className="text-sm ancient-text text-deep-ink">{module.description}</p>
+                    </div>
+                    <div className="text-ancient-gold group-hover:translate-x-2 transition-transform duration-300">
+                      →
+                    </div>
+                  </div>
+                </Card>
+              </Link>
+            </motion.div>
+          ))}
+        </motion.div>
+
+        {/* 东坡形象 */}
+        <motion.div
+=======
+>>>>>>> a1df47dfa5971ed52cd6542d0ee04a73178584f6
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4, duration: 0.8 }}
           className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8" // 用gap-4更宽松
           style={{ maxWidth: "800px", margin: "0 auto", minHeight: "10vh" }} // 宽度加大到800px
         >
+<<<<<<< HEAD
+          <Card className="ancient-card p-6 bg-white/20 backdrop-blur-sm shadow-lg border border-white/30">
+            <div className="relative inline-block mb-4">
+=======
           {culturalModules.map((module, index) => {
             const isReport = module.id === "report";
             const unlocked = reportUnlocked;
             return (
+>>>>>>> a1df47dfa5971ed52cd6542d0ee04a73178584f6
               <motion.div
                 key={module.id}
                 initial={{ opacity: 0, scale: 0.9 }}
@@ -387,6 +539,25 @@ export default function HomePage() {
                     {module.title}
                   </h3>
 
+<<<<<<< HEAD
+        {/* 底部提示 */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1.2, duration: 0.8 }}
+          className="text-center"
+        >
+          <div className="flex items-center justify-center space-x-2 text-black/70">
+            <span className="text-sm ancient-text">点击体验各个文化模块</span>
+            <motion.div
+              animate={{ y: [0, 5, 0] }}
+              transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
+              className="text-ancient-gold"
+            >
+              ↑
+            </motion.div>
+          </div>
+=======
                   {/* 图标 + 副标题 + 描述 一行 */}
                   <div className="flex items-center gap-3">
                     {/* 主页模块背景图代码*/}
@@ -429,7 +600,12 @@ export default function HomePage() {
               
             );
           })}
+>>>>>>> a1df47dfa5971ed52cd6542d0ee04a73178584f6
         </motion.div>
+<<<<<<< HEAD
+=======
+
+>>>>>>> f1178ed2b97464b0c8c4bd1d7c7dee88813a04d9
         {/* 内容区域右下角设置按钮 */}
         <div className="mt-auto flex justify-end">
           <motion.button
@@ -446,6 +622,10 @@ export default function HomePage() {
           </motion.button>
         </div>
       </div>
+<<<<<<< HEAD
+=======
+
+>>>>>>> f1178ed2b97464b0c8c4bd1d7c7dee88813a04d9
       {/* 设置菜单 - 移除了修改名字选项 */}
       <AnimatePresence>
         {showSettings && (
@@ -476,6 +656,10 @@ export default function HomePage() {
           </motion.div>
         )}
       </AnimatePresence>
+<<<<<<< HEAD
+=======
+
+>>>>>>> f1178ed2b97464b0c8c4bd1d7c7dee88813a04d9
       {/* 更换头像模态框 */}
       <AnimatePresence>
         {showAvatarModal && (
@@ -536,7 +720,12 @@ export default function HomePage() {
         )}
       </AnimatePresence>
     </div>
+<<<<<<< HEAD
+  );
+}
+=======
   )
 
   
 }
+>>>>>>> a1df47dfa5971ed52cd6542d0ee04a73178584f6
