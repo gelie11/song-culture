@@ -191,13 +191,7 @@ export default function AuthPage() {
   return (
     <div
       className="relative flex min-h-screen items-center justify-center bg-cover bg-center font-inter p-4"
-<<<<<<< HEAD
-      // **修复了这里**：直接使用 URL 路径来引用图片。
-      // 在 Next.js 中，public 文件夹下的文件可以通过 / 根路径访问。
-      style={{ backgroundImage: `url(/wel.png)` }}
-=======
       style={{ backgroundImage: `url(/denglu.jpg)` }}
->>>>>>> f1178ed2b97464b0c8c4bd1d7c7dee88813a04d9
     >
       <div className="absolute inset-0 bg-black opacity-30"></div>
 
