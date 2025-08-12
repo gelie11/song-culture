@@ -151,12 +151,13 @@ export default function HomePage() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="relative flex min-h-screen items-center justify-center bg-cover bg-center font-inter p-4"
+          className="relative flex min-h-screen items-center justify-center bg-cover bg-center font-inter bg-gray-50"
           style={{
             backgroundImage: "url('wel.png')",
           }}
         >
-          <div className="text-center">
+          <div className="absolute inset-0 bg-black/20 z-0" />
+            <div className="relative z-10 text-center">
             <motion.div
               initial={{ scale: 0, rotate: -180 }}
               animate={{ scale: 1, rotate: 0 }}
