@@ -10,6 +10,9 @@ import { ArrowLeft, Leaf, Coffee, Trophy, Video, PlayCircle } from "lucide-react
 // --- 资源配置 ---
 const GAME_BACKGROUND_IMAGE = "/tea-photos/game-background.jpg"; 
 const LONGJING_INTRO_VIDEO = "/tea-videos/longjing_intro.mp4";
+const TEA_TASTING_VIDEO = "/tea-videos/tea_tasting.mp4"; 
+const TEAPOT_IMAGE = "/tea-photos/teapot.png"; // 请在这里替换为您自己的水壶图片路径
+
 const TEA_IDENTIFICATION_OPTIONS = [
     { name: "西湖龙井", image: "/tea-photos/longjing.jpg", isCorrect: true },
     { name: "安溪铁观音", image: "/tea-photos/tieguanyin.jpg", isCorrect: false },
@@ -24,10 +27,9 @@ const ROASTING_VIDEOS = [
     { name: "压", src: "/tea-videos/ya.mp4" }, { name: "抓", src: "/tea-videos/zhua.mp4" },
 ];
 const TEAWARE_PHOTOS = ["/tea-photos/teaware-good.png", "/tea-photos/teaware-plain.png", "/tea-photos/teaware-broken.png"];
-// 修改点：将多张成品茶照片改为单张统一照片
-const FINAL_TEA_PHOTO = "/tea-photos/tea-final.jpg"; // 统一使用一张成品茶照片
+const FINAL_TEA_PHOTO = "/tea-photos/tea-final.jpg"; 
 const SOUND_EFFECTS = {
-    click: "/tea-photos/sound-click.mp3", fire: "/tea-photos/sound-fire.mp3", success: "/tea-photos/sound-success.mp3",
+    click: "/tea-photos/sound-click.mp3", fire: "/tea-photos/sound-fire.mp3", success: "/tea-photos/sound-success.mp3", pour: "/tea-photos/sound-water.mp3"
 };
 const SU_SHI_JUDGE = {
     name: "苏轼",
@@ -73,7 +75,7 @@ function shuffleArray<T>(array: T[]): T[] {
 
 export default function TeaPage() {
     // --- 游戏核心状态 ---
-    const [gameStage, setGameStage] = useState<'learning' | 'roasting' | 'brewing' | 'finished'>('learning');
+    const [gameStage, setGameStage] = useState<'learning' | 'roasting' | 'brewing' | 'pincha' | 'finished'>('learning');
     const [teaQuality, setTeaQuality] = useState({ learning: 0, roasting: 0, brewing: 0 });
     
     // 学习阶段状态
@@ -96,7 +98,8 @@ export default function TeaPage() {
     const [brewingProgress, setBrewingProgress] = useState(0);
     const brewTimer = useRef<NodeJS.Timeout | null>(null);
     const [selectedTeaware, setSelectedTeaware] = useState<number | null>(null);
-    
+    const [isPouring, setIsPouring] = useState(false); 
+
     // 最终评分和诗句
     const [finalScore, setFinalScore] = useState(0);
     const [currentPoetryIndex, setCurrentPoetryIndex] = useState(0);
@@ -151,22 +154,18 @@ export default function TeaPage() {
     };
     
     const handleTeaIdentification = (optName: string, isCorrect: boolean) => {
+        if (selectedOption) return;
         setSelectedOption(optName);
         
         if (isCorrect) {
             playSound(SOUND_EFFECTS.success, 0.5);
             setTeaQuality(prev => ({ ...prev, learning: 100 }));
             setIdentificationResult('correct');
-            setTimeout(() => setGameStage('roasting'), 2000);
         } else {
+            setTeaQuality(prev => ({ ...prev, learning: 0 }));
             setIdentificationResult('incorrect');
         }
-    };
-    
-    const restartIdentification = () => {
-        setIdentificationResult(null);
-        setSelectedOption(null);
-        startIdentificationGame();
+        setTimeout(() => setGameStage('roasting'), 2000);
     };
     
     // 炒茶视频交互逻辑
@@ -214,10 +213,16 @@ export default function TeaPage() {
         setSelectedTeaware(index);
     };
     
-    const addWater = () => {
-        if (waterLevel < 100) { 
-            setWaterLevel(prev => Math.min(100, prev + randInt(5, 9))); 
-        }
+    const handlePourWater = () => {
+        if (isPouring || waterLevel >= 100 || brewingProgress > 0) return;
+        
+        setIsPouring(true);
+        if (SOUND_EFFECTS.pour) playSound(SOUND_EFFECTS.pour, 0.3);
+        setWaterLevel(prev => Math.min(100, prev + randInt(8, 12))); 
+
+        setTimeout(() => {
+            setIsPouring(false);
+        }, 400); 
     };
     
     const startBrewing = () => {
@@ -232,7 +237,7 @@ export default function TeaPage() {
                     const teawareScore = selectedTeaware === 0 ? 100 : selectedTeaware === 1 ? 70 : 20;
                     const finalBrewingScore = Math.round(waterScore * 0.7 + teawareScore * 0.3);
                     setTeaQuality(prev => ({ ...prev, brewing: finalBrewingScore }));
-                    setGameStage('finished');
+                    setGameStage('pincha');
                     return 100;
                 }
                 return prev + 1;
@@ -307,25 +312,27 @@ export default function TeaPage() {
                                                     key={opt.name} 
                                                     onClick={() => handleTeaIdentification(opt.name, opt.isCorrect)} 
                                                     whileHover={{ scale: 1.05 }} 
-                                                    className={`cursor-pointer rounded-lg overflow-hidden border-2 ${selectedOption === opt.name ? 'border-ancient-gold' : 'border-transparent'} hover:border-ancient-gold`}
+                                                    className={`cursor-pointer rounded-lg overflow-hidden border-2 transition-all duration-300 ${
+                                                        selectedOption === opt.name 
+                                                            ? (opt.isCorrect ? 'border-ancient-gold' : 'border-cinnabar-red') 
+                                                            : 'border-transparent'
+                                                    } hover:border-ancient-gold`}
                                                 >
                                                     <img src={opt.image} alt={opt.name} className="w-full h-32 object-cover"/>
-                                                    {/* 移除了显示茶名的div */}
                                                 </motion.div>
                                             ))}
                                         </div>
-                                        {identificationResult === 'incorrect' && (
-                                            <div className="mt-4 text-center text-cinnabar-red">
-                                                <p className="ancient-text">此非龙井也，请重新选择</p>
-                                                <Button onClick={restartIdentification} className="mt-2 ancient-button">再试一次</Button>
-                                            </div>
+                                        <AnimatePresence>
+                                        {identificationResult !== null && (
+                                            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-4 text-center">
+                                                {identificationResult === 'correct' ? (
+                                                    <p className="ancient-text text-bamboo-green">慧眼识珠！即将进入炒茶环节...</p>
+                                                ) : (
+                                                    <p className="ancient-text text-cinnabar-red">此非龙井也。下一折将考验炒茶之术。</p>
+                                                )}
+                                            </motion.div>
                                         )}
-                                    </motion.div>
-                                )}
-                                {learningSubStage === 'result' && identificationResult === 'correct' && (
-                                    <motion.div key="result" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center h-48 flex flex-col justify-center items-center">
-                                        <h2 className="text-2xl font-bold ancient-title text-ink-black">慧眼识珠！</h2>
-                                        <p className="ancient-text text-deep-ink mt-2">此乃正宗龙井之形。</p>
+                                        </AnimatePresence>
                                     </motion.div>
                                 )}
                             </AnimatePresence>
@@ -343,7 +350,7 @@ export default function TeaPage() {
                                 <p className="ancient-text text-deep-ink leading-relaxed text-sm">{isRoastingActive ? "观看演示后，请在两秒内按下对应动作。" : "请点击下方视频，开始学习炒茶手法。"}</p>
                             </div>
                             <div className="relative w-full aspect-video bg-black rounded-lg overflow-hidden">
-                                <video ref={roastingVideoRef} key={currentVideo.src} className="w-full h-full" onEnded={handleVideoEnd} playsInline muted>
+                                <video ref={roastingVideoRef} key={currentVideo.src} className="w-full h-full" onEnded={handleVideoEnd} playsInline muted controls>
                                     <source src={currentVideo.src} type="video/mp4" />
                                 </video>
                                 {!isRoastingActive && (
@@ -384,7 +391,9 @@ export default function TeaPage() {
                             <div className="text-center mb-4">
                                 <Coffee className="w-12 h-12 text-bronze-gold mx-auto mb-2" />
                                 <h2 className="text-xl font-bold ancient-title text-ink-black mb-2">第三折：冲泡</h2>
-                                <p className="ancient-text text-deep-ink leading-relaxed text-sm">{selectedTeaware === null ? "器为茶之父。请择一佳器。" : `水为茶之母。请注水至75%，再行冲泡。`}</p>
+                                <p className="ancient-text text-deep-ink leading-relaxed text-sm">
+                                    {selectedTeaware === null ? "器为茶之父。请择一佳器。" : `点击水壶向杯中注水，至七分满为佳。`}
+                                </p>
                             </div>
                             {selectedTeaware === null ? (
                                 <div className="grid grid-cols-3 gap-4 h-64 items-center">
@@ -400,26 +409,77 @@ export default function TeaPage() {
                                     ))}
                                 </div>
                             ) : (
-                                <>
-                                    <div className="relative w-full h-64 flex items-center justify-center">
-                                        <div className="relative w-36 h-40 bg-gray-100 rounded-b-full border-4 border-gray-400 overflow-hidden">
-                                            <motion.div 
-                                                className="absolute bottom-0 w-full" 
-                                                style={{ 
-                                                    height: `${waterLevel}%`, 
-                                                    background: `linear-gradient(to top, #5d4037, #8d6e63)`
-                                                }}
-                                            />
-                                            <div className="absolute w-full h-1 bg-green-500" style={{ top: `${100 - 75}%` }} />
+                                <div className="flex flex-col md:flex-row items-center justify-center h-[350px] space-y-6 md:space-y-0 md:space-x-8">
+                                    <motion.div 
+                                        className="w-32 h-32 cursor-pointer"
+                                        onClick={handlePourWater}
+                                        animate={{ rotate: isPouring ? -45 : 0, x: isPouring ? 20 : 0 }}
+                                        transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+                                        whileHover={{ scale: 1.05 }}
+                                    >
+                                        <img src={TEAPOT_IMAGE} alt="水壶" className="w-full h-full object-contain drop-shadow-lg" />
+                                    </motion.div>
+                                    
+                                    {/* 修改点：移除茶杯内的水位动画 */}
+                                    <div className="w-48 h-48 flex items-center justify-center">
+                                        <img src={TEAWARE_PHOTOS[selectedTeaware]} alt="选中的茶器" className="w-full h-full object-contain drop-shadow-md" />
+                                    </div>
+                                    
+                                    {/* 修改点：美化右侧仪表盘 */}
+                                    <div className="flex flex-col items-center justify-between h-full w-36 py-4 px-2 bg-ivory-white/50 rounded-lg border border-ancient-gold/20 shadow-inner">
+                                        <div className="text-center">
+                                            <p className="ancient-text text-deep-ink text-sm">当前水位</p>
+                                            <p className="ancient-title text-2xl text-bronze-gold font-bold" style={{textShadow: '1px 1px 2px rgba(0,0,0,0.1)'}}>
+                                                {waterLevel}%
+                                            </p>
                                         </div>
-                                        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black/70 text-white text-xs px-2 py-1 rounded-full">水位: {waterLevel}%</div>
+                                        <div className="w-8 h-48 bg-stone-200 rounded-full overflow-hidden relative border-2 border-bronze-gold/30 shadow-inner">
+                                            <motion.div 
+                                                className="absolute bottom-0 w-full"
+                                                style={{ background: 'linear-gradient(to top, #c4a35a, #e6d3a1)' }} // 茶汤渐变色
+                                                initial={{ height: 0 }}
+                                                animate={{ height: `${waterLevel}%` }}
+                                                transition={{ duration: 0.4, ease: "easeOut" }}
+                                            />
+                                            <div className="absolute left-0 right-0 h-1 bg-ancient-gold shadow-md" style={{ bottom: '75%' }}>
+                                                <div className="w-2 h-1 bg-white/50 absolute left-1/2 -translate-x-1/2"></div>
+                                            </div>
+                                        </div>
+                                        <Button 
+                                            onClick={startBrewing} 
+                                            disabled={brewingProgress > 0 || waterLevel === 0} 
+                                            className="w-full ancient-button bg-bamboo-green hover:bg-jade-green mt-2"
+                                        >
+                                            {brewingProgress > 0 ? "泡茶中..." : "开始泡茶"}
+                                        </Button>
                                     </div>
-                                    <div className="space-y-3 mt-4">
-                                        <Button onClick={addWater} disabled={waterLevel >= 100 || brewingProgress > 0} className="w-full ancient-button text-lg py-3">加水</Button>
-                                        <Button onClick={startBrewing} disabled={brewingProgress > 0 || waterLevel === 0} className="w-full ancient-button text-lg py-3 bg-bamboo-green hover:bg-jade-green">{brewingProgress > 0 ? "泡茶中..." : "开始泡茶"}</Button>
-                                    </div>
-                                </>
+                                </div>
                             )}
+                        </Card>
+                    </motion.div>
+                );
+            case 'pincha':
+                return (
+                    <motion.div key="pincha" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                        <Card className="ancient-card p-6 mb-6 bg-white/80 backdrop-blur-sm">
+                            <div className="text-center mb-4">
+                                <Coffee className="w-12 h-12 text-bronze-gold mx-auto mb-2" />
+                                <h2 className="text-xl font-bold ancient-title text-ink-black mb-2">第四折：东坡品茗</h2>
+                                <p className="ancient-text text-deep-ink leading-relaxed text-sm">佳茗已成，且随东坡先生一同细品，观其色，闻其香，尝其味。</p>
+                            </div>
+                            <div className="relative w-full aspect-video bg-black rounded-lg overflow-hidden">
+                                <video 
+                                    className="w-full h-full" 
+                                    onEnded={() => setGameStage('finished')} 
+                                    playsInline 
+                                    controls 
+                                    autoPlay
+                                >
+                                    <source src={TEA_TASTING_VIDEO} type="video/mp4" />
+                                    你的浏览器不支持 Video 标签。
+                                </video>
+                            </div>
+                            <Button onClick={() => setGameStage('finished')} className="w-full mt-4 ancient-button text-sm">跳过并查看品鉴</Button>
                         </Card>
                     </motion.div>
                 );
@@ -444,7 +504,6 @@ export default function TeaPage() {
                                 <h3 className="text-2xl font-bold ancient-title text-ink-black mb-2">恭喜！获封名号：<span className="text-cinnabar-red">{title}</span></h3>
                                 <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 260, damping: 20 }} className="text-6xl font-extrabold text-ancient-gold my-4">{finalScore}</motion.div>
                                 <div className="w-32 h-32 mx-auto mb-4 rounded-full border-4 border-ancient-gold/50 overflow-hidden shadow-inner">
-                                    {/* 修改点：使用单张统一茶照片 */}
                                     <img src={FINAL_TEA_PHOTO} alt="Final Tea" className="w-full h-full object-cover"/>
                                 </div>
                                 
@@ -457,7 +516,7 @@ export default function TeaPage() {
                                     </ul>
                                 </Card>
 
-                                <div className="space-y极3 mt-6">
+                                <div className="space-y-3 mt-6">
                                     <Button onClick={resetGame} className="w-full ancient-button text-lg">再试一番</Button>
                                     <Link href="/silk"><Button className="w-full ancient-button text-lg">下一站：锦绣华章 →</Button></Link>
                                     <Link href="/"><Button variant="outline" className="w-full border-bamboo-green text-bamboo-green bg-transparent hover:bg-bamboo-green/10">返回首页</Button></Link>
@@ -478,7 +537,7 @@ export default function TeaPage() {
             
             <div className="relative z-10 p-6">
                 <div className="flex items-center justify-between mb-6">
-                    <Link href="/"><Button variant="ghost" className="text-ink-black hover:极bg-ancient-gold/10 ancient-text"><ArrowLeft className="w-4 h-4 mr-2" />返回</Button></Link>
+                    <Link href="/"><Button variant="ghost" className="text-ink-black hover:bg-ancient-gold/10 ancient-text"><ArrowLeft className="w-4 h-4 mr-2" />返回</Button></Link>
                     <div className="text-center"><h1 className="text-2xl font-bold ancient-title text-ink-black">茶禅一味</h1><p className="text-sm text-ancient-gold ancient-text">东坡品茗</p></div>
                     <button onClick={toggleMusic} className="bg-white/70 hover:bg-white p-2 rounded-full shadow-md transition-all" aria-label="控制音乐">
                         {isMusicPlaying 
@@ -487,23 +546,33 @@ export default function TeaPage() {
                         }
                     </button>
                 </div>
-                <Card className="ancient-card p-4 mb-6 bg-white/60 backdrop-blur-sm">
-                    <div className="text-center h-20 flex flex-col items-center justify-center overflow-hidden">
-                        <AnimatePresence mode="wait">
-                            <motion.div 
-                                key={currentPoetryIndex} 
-                                initial={{ opacity: 0, y: 20 }} 
-                                animate={{ opacity: 1, y: 0 }} 
-                                exit={{ opacity: 0, y: -20 }} 
-                                transition={{ duration: 0.8 }} 
-                                className="text-center"
+                
+                <div className="text-center h-20 flex flex-col items-center justify-center overflow-hidden mb-6">
+                    <AnimatePresence mode="wait">
+                        <motion.div 
+                            key={currentPoetryIndex} 
+                            initial={{ opacity: 0, y: 20 }} 
+                            animate={{ opacity: 1, y: 0 }} 
+                            exit={{ opacity: 0, y: -20 }} 
+                            transition={{ duration: 0.8 }} 
+                            className="text-center"
+                        >
+                            <p 
+                                className="text-xl ancient-title text-ink-black/90 font-semibold mb-1"
+                                style={{ textShadow: '1px 1px 3px rgba(255, 255, 255, 0.4)' }}
                             >
-                                <p className="text-lg ancient-text text-deep-ink mb-1">{teaPoetry[currentPoetryIndex].text}</p>
-                                <p className="text-xs text-ancient-gold ancient-text">—— {teaPoetry[currentPoetryIndex].author}</p>
-                            </motion.div>
-                        </AnimatePresence>
-                    </div>
-                </Card>
+                                {teaPoetry[currentPoetryIndex].text}
+                            </p>
+                            <p 
+                                className="text-sm text-ancient-gold/90 ancient-text"
+                                style={{ textShadow: '1px 1px 3px rgba(255, 255, 255, 0.3)' }}
+                            >
+                                —— {teaPoetry[currentPoetryIndex].author}
+                            </p>
+                        </motion.div>
+                    </AnimatePresence>
+                </div>
+
             </div>
             <div className="relative z-10 px-6 pb-6">
                 <AnimatePresence mode="wait">
