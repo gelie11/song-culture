@@ -1,0 +1,37 @@
+﻿'use client';
+
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+
+const poems = [
+  {
+    id: 1,
+    title: "江雪",
+    author: "柳宗元",
+    image: "/wel.png",
+    content: "千山鸟飞绝，万径人踪灭。孤舟蓑笠翁，独钓寒江雪。",
+    options: ["江雪", "夜雪", "冬雪", "暮雪"],
+    correctIndex: 0,
+    tips: [
+      "这是一首描写冬天景色的诗",
+      "表达了一种孤独、寂寥的意境",
+      "诗中有'雪'字"
+    ],
+    audio: "/placeholder.mp3"
+  },
+  {
+    id: 2,
+    title: "山居秋暝",
+    author: "王维",
+    image: "/wel.png",
+    content: "空山新雨后，天气晚来秋。明月松间照，清泉石上流。",
+    options: ["山居秋暝", "秋夜", "山月", "秋晚"],
+    correctIndex: 0,
+    tips: [
+      "这首诗描写了秋天傍晚的山林景色",
+      "诗中有'月'字和'泉'字",
+      "体现了诗人对自然的感悟"
+    ],
+    audio: "/placeholder.mp3"
+  }
+];'

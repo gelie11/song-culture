@@ -1,0 +1,272 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* 古风色彩系统 */
+  --ancient-black: #1a1a1a;
+  --ink-black: #2c2c2c;
+  --deep-ink: #3d3d3d;
+  --ancient-gold: #d4af37;
+  --bronze-gold: #cd7f32;
+  --jade-green: #1e3a2e;
+  --deep-jade: #0f2419;
+  --cinnabar-red: #8b2635;
+  --deep-red: #6b1e2a;
+  --ivory-white: #faf6f0;
+  --rice-paper: #f5f1e8;
+  --bamboo-green: #4a5d23;
+  --plum-purple: #5d4e75;
+
+  /* 渐变色 */
+  --gradient-ink: linear-gradient(135deg, #2c2c2c 0%, #1a1a1a 100%);
+  --gradient-gold: linear-gradient(135deg, #d4af37 0%, #cd7f32 100%);
+  --gradient-jade: linear-gradient(135deg, #1e3a2e 0%, #0f2419 100%);
+  --gradient-red: linear-gradient(135deg, #8b2635 0%, #6b1e2a 100%);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "WenQuanYi Micro Hei", "Helvetica Neue", Arial,
+    sans-serif;
+  background: var(--rice-paper);
+  color: var(--ink-black);
+  overflow-x: hidden;
+}
+
+.app-container {
+  max-width: 430px;
+  margin: 0 auto;
+  min-height: 100vh;
+  background: var(--rice-paper);
+  position: relative;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+}
+
+/* 古风装饰元素 */
+.ancient-border {
+  border: 2px solid var(--ancient-gold);
+  border-image: linear-gradient(45deg, var(--ancient-gold), var(--bronze-gold)) 1;
+  position: relative;
+}
+
+.ancient-border::before,
+.ancient-border::after {
+  content: "";
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--ancient-gold);
+}
+
+.ancient-border::before {
+  top: -2px;
+  left: -2px;
+  border-right: none;
+  border-bottom: none;
+}
+
+.ancient-border::after {
+  bottom: -2px;
+  right: -2px;
+  border-left: none;
+  border-top: none;
+}
+
+/* 水墨效果 */
+.ink-wash {
+  background: radial-gradient(circle at 30% 30%, rgba(44, 44, 44, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 70% 70%, rgba(30, 58, 46, 0.1) 0%, transparent 50%);
+}
+
+/* 古风按钮 */
+.ancient-button {
+  background: var(--gradient-gold);
+  border: 2px solid var(--bronze-gold);
+  border-radius: 25px;
+  color: var(--ancient-black);
+  font-weight: 600;
+  padding: 12px 24px;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.ancient-button::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transition: left 0.5s;
+}
+
+.ancient-button:hover::before {
+  left: 100%;
+}
+
+/* 古风卡片 */
+.ancient-card {
+  background: var(--ivory-white);
+  border: 1px solid var(--ancient-gold);
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(212, 175, 55, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+.ancient-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--gradient-gold);
+}
+
+/* 古风文字样式 */
+.ancient-title {
+  font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "WenQuanYi Micro Hei", serif;
+  font-weight: 700;
+  color: var(--ink-black);
+  text-shadow: 1px 1px 2px rgba(212, 175, 55, 0.3);
+  letter-spacing: 0.1em;
+}
+/* 禹卫书法行书繁体 开局动画字体*/
+/* 全局 CSS 中添加 */
+@font-face {
+  font-family: 'LinAnFont'; /* 自定义字体名称，后续引用 */
+  src: url('../public/fonts/YuWeiShuFaXingShuFanTi-1.ttf') format('truetype'); /* 重点：支持 TTF 格式 */
+  font-weight: normal;
+  font-style: normal;
+  /* 可选：添加字体显示策略，优化加载体验 */
+  font-display: swap;
+}
+
+
+.ancient-text {
+  font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "WenQuanYi Micro Hei", serif;
+  color: var(--deep-ink);
+  line-height: 1.8;
+  letter-spacing: 0.05em;
+}
+
+/* 动画效果 */
+@keyframes float-ancient {
+  0%,
+  100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-15px) rotate(5deg);
+  }
+}
+
+@keyframes ink-drop {
+  0% {
+    opacity: 0;
+    transform: scale(0) rotate(0deg);
+  }
+  50% {
+    opacity: 0.6;
+    transform: scale(1) rotate(180deg);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.5) rotate(360deg);
+  }
+}
+
+@keyframes scroll-ancient {
+  0% {
+    transform: scaleX(0);
+    opacity: 0;
+  }
+  100% {
+    transform: scaleX(1);
+    opacity: 1;
+  }
+}
+
+.floating-ancient {
+  animation: float-ancient 4s ease-in-out infinite;
+}
+
+.ink-drop {
+  animation: ink-drop 3s ease-out infinite;
+}
+
+.scroll-ancient {
+  animation: scroll-ancient 2s ease-out forwards;
+  transform-origin: left center;
+}
+
+/* 古风图标样式 */
+.ancient-icon {
+  filter: drop-shadow(2px 2px 4px rgba(212, 175, 55, 0.3));
+}
+
+/* 古风进度条 */
+.ancient-progress {
+  background: var(--rice-paper);
+  border: 1px solid var(--ancient-gold);
+  border-radius: 10px;
+  overflow: hidden;
+  position: relative;
+}
+
+.ancient-progress::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background: var(--gradient-gold);
+  transition: width 0.8s ease;
+}
+
+/* 响应式设计 */
+@media (max-width: 430px) {
+  .app-container {
+    max-width: 100%;
+  }
+}
+
+/* 古风装饰纹样 */
+.ancient-pattern {
+  background-image: radial-gradient(circle at 25% 25%, var(--ancient-gold) 2px, transparent 2px),
+    radial-gradient(circle at 75% 75%, var(--ancient-gold) 1px, transparent 1px);
+  background-size: 40px 40px;
+  background-position: 0 0, 20px 20px;
+  opacity: 0.1;
+}
+
+/* 古风阴影效果 */
+.ancient-shadow {
+  box-shadow: 0 4px 16px rgba(212, 175, 55, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+/* 首页顶部标题 */
+.badge-container {
+  display: inline-block;
+  position: relative;
+  padding: 1.2rem 2rem; 
+}
+.badge-background {
+  width: 300px; /* 可按需调整标签宽高 */
+  height: 60px;
+  background: linear-gradient(to right, #b58257, #d9b38c); 
+  border: 2px solid #8b5a2b;
+  border-radius: 12px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+.ancient-title {
+  font-family: "SimSun", serif; /* 模拟类似古籍字体，可替换成你想要的复古字体 */
+}
