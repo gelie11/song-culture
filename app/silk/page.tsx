@@ -67,6 +67,39 @@ type Customer = {
 };
 
 export default function SilkPage() {
+  const ImageButton = ({
+    onClick,
+    imageSrc,
+    altText,
+    buttonText,
+    width = 200,
+    height = 100
+  }: {
+    onClick: () => void;
+    imageSrc: string;
+    altText: string;
+    buttonText: string;
+    width?: number;
+    height?: number;
+  }) => (
+    <button
+      onClick={onClick}
+      className="group relative p-0 border-none bg-transparent cursor-pointer focus:outline-none"
+      aria-label={altText}
+    >
+      <Image
+        src={imageSrc}
+        alt={altText}
+        width={width}
+        height={height}
+        quality={100}
+        className="transition-transform duration-300 group-hover:scale-110 group-active:scale-95 drop-shadow-xl"
+      />
+      <span className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-white text-xl font-bold tracking-wider group-hover:text-amber-200 transition-colors">
+        {buttonText}
+      </span>
+    </button>
+  );
   const router = useRouter();
   // 添加状态来控制是否跳转
   const [shouldRedirect, setShouldRedirect] = useState(false);
@@ -260,8 +293,8 @@ export default function SilkPage() {
       // 设置2秒延迟后跳转
       const timer = setTimeout(() => {
         router.push('/silk/2');  // 跳转到目标页
-      clearInventory();        // 清空当前库存
-      setShouldRedirect(true); // 标记已跳转（防止重复触发）
+        clearInventory();        // 清空当前库存
+        setShouldRedirect(true); // 标记已跳转（防止重复触发）
       }, 1000);
 
       return () => clearTimeout(timer);
@@ -713,7 +746,7 @@ export default function SilkPage() {
             <h1 className="text-2xl md:text-3xl font-bold text-black drop-shadow-lg">
               <span className="px-3 py-1 rounded-full"></span>
             </h1>
-            <p className="text-black/80 drop-shadow-md">江南丝绸，天下闻名</p>
+            <p className="text-black/80 drop-shadow-md"></p>
           </div>
 
           <div className="relativemin-h-[20px]">
@@ -752,7 +785,7 @@ export default function SilkPage() {
         )}
 
         {/* 客户选择区 */}
-        <Card className="ancient-card p-3 mb-8 bg-gradient-to-br from-rice-paper to-ivory-white">
+        <Card className="ancient-card p-3 mb-8 mt-11 bg-gradient-to-br from-rice-paper to-ivory-white">
           <h2 className="text-lg font-bold text-stone-800 mb-3">接待顾客</h2>
           <div className="flex justify-between gap-1">
             {customerTypes.map(customer => (
@@ -884,26 +917,20 @@ export default function SilkPage() {
           </motion.div>
         )}
 
-        {/* 底部导航 */}
-        <div className="mt-8 flex flex-wrap justify-between gap-4">
-          <Link href="/">
-            <Button
-              variant="outline"
-              className="gap-2 w-full sm:w-auto"
-              onClick={clearInventory} // 添加点击事件
-            >
-              <Home className="w-4 h-4" />
-              返回首页
-            </Button>
-          </Link>
-          <Button
+        {/* 替换原有的底部导航 */}
+        <div className="flex justify-center gap-8 -mt-2">
+          <ImageButton
+            onClick={() => router.push('/')}
+            imageSrc="/silk/图片3.png" // 替换为你的实际图片路径
+            altText="返回首页"
+            buttonText=""
+          />
+          <ImageButton
             onClick={() => setCurrentStep("weaving")}
-            variant="outline"
-            className="gap-2"
-          >
-            <Factory className="w-4 h-4" />
-            前往织造工坊
-          </Button>
+            imageSrc="/silk/图片5.png" // 替换为你的实际图片路径
+            altText="前往织造工坊"
+            buttonText=""
+          />
         </div>
       </div>
     </div>
