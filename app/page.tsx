@@ -1,6 +1,6 @@
 "use client"; // 标记为客户端组件
 
-import { useState, useEffect } from "react"
+import { useState, useEffect,useRef, use } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 // Card
 import { Card } from "@/components/ui/card"
@@ -11,11 +11,14 @@ import { useRouter } from "next/navigation"
  * 该组件会根据用户登录状态进行渲染，未登录时重定向到认证页面。
  */
 export default function HomePage() {
-  const [currentPoetry, setCurrentPoetry] = useState(0)
-  const [showWelcome, setShowWelcome] = useState(true)
-  const [inkDrops, setInkDrops] = useState<Array<{ id: number; x: number; y: number }>>([])
-  const [loggedInUser, setLoggedInUser] = useState<string | null>(null);
-  const router = useRouter()
+  const [currentPoetry, setCurrentPoetry] = useState(0);
+  const [showWelcome, setShowWelcome] = useState(true);
+  const [inkDrops, setInkDrops] = useState<Array<{ id: number; x: number; y: number }>>([]);
+  const [userData, setUserData] = useState<{ username: string; account: string; avatar: string } | null>(null);
+  const [showSettings, setShowSettings] = useState(false);
+  const [showAvatarModal, setShowAvatarModal] = useState(false);
+  const settingsRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
 
   const poetryLines = [
     "明月几时有，把酒问青天",
@@ -94,17 +97,22 @@ export default function HomePage() {
 
   useEffect(() => {
     // 检查登录状态
-    const user = localStorage.getItem('loggedInUser');
-    if (user) {
-      setLoggedInUser(user);
-      // 如果已登录，跳过欢迎动画
-      setShowWelcome(false);
+    const userJson = localStorage.getItem("loggedInUser");
+    if (userJson) {
+      try {
+        const user = JSON.parse(userJson);
+        setUserData(user);
+        console.log("用户数据:", user);
+        setShowWelcome(false);
+      } catch (error) {
+        console.error("解析用户数据失败:", error);
+        router.push("/login");
+      }
     } else {
-      // 如果未登录，在欢迎动画结束后重定向到认证页面
       const welcomeTimer = setTimeout(() => {
         setShowWelcome(false);
-        router.push("/login"); // 重定向到新的登录页面
-      }, 2000); // 欢迎动画持续 2 秒
+        router.push("/login");
+      }, 2000);
       return () => clearTimeout(welcomeTimer);
     }
     // 诗词轮播
@@ -124,10 +132,49 @@ export default function HomePage() {
       clearInterval(poetryTimer)
     }
   }, [router]);
+  useEffect(() => {
+    console.log("用户数据已更新:", userData);
+  }, [userData]);
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (settingsRef.current && !settingsRef.current.contains(event.target as Node)) {
+        setShowSettings(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
   const handleLogout = () => {
     localStorage.removeItem("loggedInUser"); // 清除登录状态
     router.push("/login"); // 重定向到登录页面
   };
+  // 修改头像功能
+  const handleAvatarChange = (selectedAvatar: string) => {
+    if (userData) {
+      // 创建新的用户对象，保留其他数据
+      const updatedUser = {
+        ...userData,
+        avatar: selectedAvatar
+      };
+      
+      // 更新状态和本地存储
+      setUserData(updatedUser);
+      localStorage.setItem("loggedInUser", JSON.stringify(updatedUser));
+      
+      setShowAvatarModal(false);
+    }
+  };
+
+  // 生成随机头像
+  const generateRandomAvatar = (): string => {
+    const timestamp = Date.now();
+    const randomString = Math.random().toString(36).substring(2, 10);
+    return `https://i.pravatar.cc/150?u=${timestamp}-${randomString}`;
+  };
+
   // 处理模块点击
   const handleModuleClick = (id: string, path: string, locked?: boolean) => {
     if (id === "report" && !reportUnlocked) return;
@@ -143,7 +190,7 @@ export default function HomePage() {
     router.push(path);
   };
   // 如果未登录，显示加载或欢迎动画
-  if (!loggedInUser && showWelcome) {
+  if (!userData && showWelcome) {
     return (
       // 欢迎动画模块
       <AnimatePresence>
@@ -151,12 +198,13 @@ export default function HomePage() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="relative flex min-h-screen items-center justify-center bg-cover bg-center font-inter p-4"
+          className="relative flex min-h-screen items-center justify-center bg-cover bg-center font-inter bg-gray-50"
           style={{
             backgroundImage: "url('wel.png')",
           }}
         >
-          <div className="text-center">
+          <div className="absolute inset-0 bg-black/20 z-0" />
+            <div className="relative z-10 text-center">
             <motion.div
               initial={{ scale: 0, rotate: -180 }}
               animate={{ scale: 1, rotate: 0 }}
@@ -164,7 +212,7 @@ export default function HomePage() {
               className="text-4xl font-bold text-ancient-gold 
               tracking-wide font-['KaiTi']"
             >
-              臨安錄
+              宋韵漫游
             </motion.div>
             <motion.h1
               initial={{ opacity: 0, y: 50 }}
@@ -172,7 +220,7 @@ export default function HomePage() {
               transition={{ delay: 0.5, duration: 0.8 }}
               className="text-3xl font-bold ancient-title mb-2"
             >
-              宋韵漫游
+              穿越千年，品味宋韵之美
             </motion.h1>
           </div>
         </motion.div>
@@ -180,7 +228,7 @@ export default function HomePage() {
     );
   }
 
-  if (!loggedInUser) {
+  if (!userData) {
     // 欢迎动画结束后但未登录时，不渲染任何内容，等待重定向
     return null;
   }
@@ -227,34 +275,40 @@ export default function HomePage() {
           }}
         />
       ))}
-      <div className="relative z-10 p-6">
-        {/*顶部用户信息 */}
-        <div className="flex justify-between items-center mb-1">
-          <motion.div
+      {/* 内容区域 */}
+      <div className="relative z-10 p-6 min-h-screen flex flex-col">
+        {/* 顶部用户信息 */}
+        <div className="mb-0.5 flex justify-between items-center">
+            <motion.div
             initial={{ opacity: 0, x: -50 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8 }}
-            className="text-2xl font-bold ancient-title text-black" // 文字颜色改为黑色，以便在亮背景上可见
+            className="flex items-center"
           >
-            你好，{loggedInUser}
+            {userData.avatar ? (
+              <img
+                src={userData.avatar}
+                alt="用户头像"
+                className="w-12 h-12 rounded-full border-2 border-ancient-gold object-cover"
+              />
+            ) : (
+              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-ancient-gold to-bronze-gold flex items-center justify-center text-white text-xl font-bold">
+                {userData.username?.charAt(0)}
+              </div>
+            )}<div className="ml-3">
+              <p className="text-sm text-gray-700">{userData.username}</p>
+              <p className="text-xs text-gray-500">账号: {userData.account}</p>
+            </div>
           </motion.div>
-          <motion.button
-            onClick={handleLogout}
-            initial={{ opacity: 0, x: 50 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8 }}
-            className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-md transition-all shadow-md hover:shadow-lg"
-          >
-            退出
-          </motion.button>
         </div>
+
 
         {/* 顶部标题区域 */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
-          className="text-center mb-8"
+          className="text-center mb-1"
         >
           <div className="relative badge-container">
             {/* 模拟复古标签背景 */}
@@ -269,7 +323,7 @@ export default function HomePage() {
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.2, duration: 0.8 }}
-          className="mb-8"
+          className="mb-1"
         >
           <Card className="p-6 text-center max-w-md mx-auto bg-transparent border-none"
             style={{
@@ -371,12 +425,116 @@ export default function HomePage() {
                     </div>
                   </div>
                 </div>
-
               </motion.div>
+              
             );
           })}
         </motion.div>
+        {/* 内容区域右下角设置按钮 */}
+        <div className="mt-auto flex justify-end">
+          <motion.button
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1.4, duration: 0.8 }}
+            className="bg-white/80 backdrop-blur-sm p-3 rounded-full shadow-lg hover:bg-white transition-all"
+            onClick={() => setShowSettings(!showSettings)}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-deep-ink" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+          </motion.button>
+        </div>
       </div>
+      {/* 设置菜单 - 移除了修改名字选项 */}
+      <AnimatePresence>
+        {showSettings && (
+          <motion.div
+            ref={settingsRef}
+            initial={{ opacity: 0, y: 100 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 100 }}
+            className="fixed inset-x-0 bottom-0 z-40 bg-white/80 backdrop-blur-lg rounded-t-2xl shadow-lg p-4 max-w-sm mx-auto"
+          >
+            <div className="space-y-3">
+              <button
+                onClick={() => {
+                  setShowAvatarModal(true);
+                  setShowSettings(false);
+                }}
+                className="w-full text-left py-2 px-3 rounded-lg bg-white/90 hover:bg-gray-100 transition-all shadow-sm"
+              >
+                更换头像
+              </button>
+              <button
+                onClick={handleLogout}
+                className="w-full text-left py-2 px-3 rounded-lg bg-white/90 hover:bg-red-50 text-red-500 transition-all shadow-sm"
+              >
+                退出登录
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+      {/* 更换头像模态框 */}
+      <AnimatePresence>
+        {showAvatarModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+            onClick={() => setShowAvatarModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              className="bg-white rounded-xl p-5 w-full max-w-sm"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h3 className="text-xl font-bold mb-3">更换头像</h3>
+              <div className="grid grid-cols-4 gap-3 mb-4">
+                {[1, 2, 3, 4].map((num) => (
+                  <div
+                    key={num}
+                    className={`cursor-pointer w-14 h-14 rounded-full overflow-hidden border-2 ${
+                      userData.avatar === `/avatar${num}.jpg`
+                        ? "border-ancient-gold"
+                        : "border-gray-300"
+                    }`}
+                    onClick={() => handleAvatarChange(`/avatar${num}.jpg`)}
+                  >
+                    <img
+                      src={`/avatar${num}.jpg`}
+                      alt={`头像 ${num}`}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                ))}
+                <div
+                  className={`cursor-pointer w-14 h-14 rounded-full flex items-center justify-center border-2 ${
+                    userData.avatar && userData.avatar.startsWith("https://")
+                      ? "border-ancient-gold"
+                      : "border-gray-300"
+                  }`}
+                  onClick={() => handleAvatarChange(generateRandomAvatar())}
+                >
+                  <span className="text-xs text-gray-600">随机</span>
+                </div>
+              </div>
+              <div className="flex justify-end">
+                <button
+                  onClick={() => setShowAvatarModal(false)}
+                  className="px-4 py-2 text-gray-500 hover:text-gray-700"
+                >
+                  取消
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 

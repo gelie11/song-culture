@@ -8,27 +8,33 @@ export default function ReportScrollPage() {
   const [showButton, setShowButton] = useState(false);
 
   useEffect(() => {
-    // 展开动画结束后显示按钮
-    const timer = setTimeout(() => setShowButton(true), 2800);
-    return () => clearTimeout(timer);
+    const timer = setTimeout(() => setShowButton(true), 3000);
+    return () => clearTimeout(timer); 
   }, []);
+
+  const scrollHeight = 1100; // 画卷实际高度
 
   return (
     <div
       className="min-h-screen flex flex-col items-center justify-center bg-cover bg-center"
-      style={{ backgroundImage: "url('/chushijiemian.jpg')" }}
+      style={{ backgroundImage: "url('/report/画卷背景.png')",
+        backgroundRepeat: "no-repeat", // 新增：背景不重复
+        backgroundSize: "cover" // 新增：保持背景图比例覆盖容器
+      }}
     >
       <div
         className="w-full flex flex-col items-center justify-center"
         style={{ maxWidth: "600px", minHeight: "60vh" }}
       >
-        {/* 卷轴容器 */}
+        {/* 卷轴外层固定容器 */}
         <div
           style={{
-            overflow: "hidden",
             position: "relative",
+            width: "100%",
+            height: `${scrollHeight}px`, // 固定高度，防止背景被拉长
             borderRadius: "1.5rem",
             boxShadow: "0 8px 32px rgba(0,0,0,0.18)",
+            overflow: "hidden",
           }}
         >
           {/* 卷轴上端 */}
@@ -50,17 +56,26 @@ export default function ReportScrollPage() {
           </div>
 
           {/* 画卷本体 */}
-          <motion.img
-            src="/report/画卷.png"
-            alt="画卷"
-            initial={{ height: 0 }}
-            animate={{ height: 1340 }} // 这里用画卷的实际高度
-            transition={{ duration: 3, ease: "easeInOut" }}
+          <motion.div
             style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
               width: "100%",
-              objectFit: "cover",
+              overflow: "hidden",
             }}
-          />
+            initial={{ height: 0 }}
+            animate={{ height: scrollHeight }}
+            transition={{ duration: 3, ease: "easeInOut" }}
+          >
+            <Image
+              src="/report/画卷3.png"
+              alt="画卷"
+              width={600}
+              height={scrollHeight}
+              style={{ display: "block" }}
+            />
+          </motion.div>
 
           {/* 卷轴下端 */}
           <motion.div
@@ -68,11 +83,10 @@ export default function ReportScrollPage() {
               position: "absolute",
               left: "50%",
               transform: "translateX(-50%)",
-              bottom: 0,
               zIndex: 10,
             }}
-            initial={{ y: 0 }}
-            animate={{ y: 1340 }} // 跟随展开高度
+            initial={{ top: 0 }}
+            animate={{ top: scrollHeight }}
             transition={{ duration: 3, ease: "easeInOut" }}
           >
             <Image
