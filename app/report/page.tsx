@@ -100,11 +100,30 @@ export default function ReportScrollPage() {
 
         {showButton && (
           <button
-            onClick={() => router.push("/report/1")}
-            className="mt-8 px-8 py-3 rounded-full bg-gradient-to-r from-yellow-300 to-yellow-500 text-lg font-bold text-white shadow hover:scale-105 transition"
-          >
-            进入成就报告
-          </button>
+  onClick={() => router.push("/report/1")}
+  className="mt-8 w-full bg-center bg-cover bg-no-repeat flex items-center justify-center
+             rounded-none border-none outline-none shadow-none
+             hover:scale-105 transition disabled:opacity-50 disabled:cursor-not-allowed"
+  style={{
+    backgroundImage: "url('/login-dl.png')", // 与登录按钮相同的背景图路径
+    height: "100px", // 保持一致的高度
+    backgroundSize: "110% auto",
+    width: "300px", // 按钮容器宽度（根据布局灵活改）
+    border: "none",
+    cursor: "pointer",
+  }}
+>
+  <span
+    className="font-bold text-3xl tracking-wider"
+    style={{
+      fontFamily: "'KaiTi', 'STKaiti', serif",
+      color: "#5B4636", // 深棕色文字
+      textShadow: "0 1px 1px rgba(255,255,255,0.6)", // 文字立体感
+    }}
+  >
+    进入成就报告
+  </span>
+</button>
         )}
       </div>
     </div>

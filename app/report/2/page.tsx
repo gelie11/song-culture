@@ -10,25 +10,53 @@ const modules = [
 export default function ReportPage2() {
   const router = useRouter();
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-cover bg-center" style={{backgroundImage: "url('/chushijiemian.jpg')"}}>
-      <div className="w-full max-w-md shadow-xl p-8 border-4 border-yellow-200" >
+    <div className="min-h-screen flex flex-col items-center justify-center bg-cover bg-center" style={{ backgroundImage: "url('/chushijiemian.jpg')" }}>
+      <div className="w-full max-w-md shadow-xl p-8 border-0 " >
         <h2 className="text-xl font-bold mb-4 text-gray-800 text-center">文化模块进度</h2>
         <div className="space-y-4 mb-6">
           {modules.map((m, i) => (
             <div key={m.title} className="bg-white/90 rounded-xl p-4 shadow flex items-center border border-yellow-100">
-              <div className="w-12 h-12 rounded-full flex items-center justify-center text-2xl mr-4" style={{background: 'linear-gradient(135deg,#f7e9c2,#e6d7c3)'}}>{m.icon}</div>
+              <div className="w-12 h-12 rounded-full flex items-center justify-center text-2xl mr-4" style={{ background: 'linear-gradient(135deg,#f7e9c2,#e6d7c3)' }}>{m.icon}</div>
               <div className="flex-1">
                 <div className="font-bold text-lg text-gray-700">{m.title}</div>
                 <div className="text-sm text-gray-500 mb-1">{m.subtitle} · {m.desc}</div>
                 <div className="w-full h-2 bg-yellow-100 rounded-full">
-                  <div className="h-2 bg-gradient-to-r from-yellow-400 to-yellow-600 rounded-full" style={{width: `${m.percent}%`}}></div>
+                  <div className="h-2 bg-gradient-to-r from-yellow-400 to-yellow-600 rounded-full" style={{ width: `${m.percent}%` }}></div>
                 </div>
                 <div className="text-xs text-right text-yellow-700 mt-1">{m.percent}%</div>
               </div>
             </div>
           ))}
         </div>
-        <button onClick={()=>router.push('/report/3')} className="mt-2 px-6 py-2 rounded-full bg-gradient-to-r from-yellow-300 to-yellow-500 text-lg font-bold text-white shadow hover:scale-105 transition">下一页</button>
+        <button
+          className="mx-auto"
+          onClick={() => router.push('/report/3')}
+          style={{
+            backgroundImage: "url('/login-dl.png')", // 替换成实际背景图路径
+            backgroundSize: "cover", // 背景图覆盖容器，可改"120% auto"等
+            backgroundPosition: "center",
+            backgroundRepeat: "no-repeat",
+            width: "200px", // 按需调整按钮宽度
+            height: "60px", // 按需调整高度，让背景图完整显示
+            border: "none",
+            cursor: "pointer",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <span
+            className="font-bold text-3xl tracking-wider"
+            style={{
+              fontSize: "22px",
+              color: "#5B4636", // 深棕色文字，适配古风
+              textShadow: "0 1px 1px rgba(255,255,255,0.6)",
+              fontFamily: "'KaiTi', 'STKaiti', serif",
+            }}
+          >
+            下一页
+          </span>
+        </button>
       </div>
     </div>
   );
