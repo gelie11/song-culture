@@ -200,7 +200,7 @@ export default function HomePage() {
           exit={{ opacity: 0 }}
           className="relative flex min-h-screen items-center justify-center bg-cover bg-center font-inter bg-gray-50"
           style={{
-            backgroundImage: "url('wel.png')",
+            backgroundImage: "url('/login/login-dl.png')",
           }}
         >
           <div className="absolute inset-0 bg-black/20 z-0" />

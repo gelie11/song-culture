@@ -191,7 +191,7 @@ export default function AuthPage() {
   return (
     <div
       className="relative flex min-h-screen items-center justify-center bg-cover bg-center font-inter p-4"
-      style={{ backgroundImage: `url(/wel.png)` }}
+      style={{ backgroundImage: `url(/login/login-dl.png)` }}
     >
       <div className="absolute inset-0 bg-black opacity-30"></div>
 
