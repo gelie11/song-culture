@@ -7,19 +7,6 @@ export default function Module3() {
   // 题库
   const poems = [
     {
-      title: "钱塘湖春行",
-      author: "白居易",
-      image: "/poetry/qiantanghu.jpg",
-      audio: "/poetry/qiantanghu.mp3",
-      options: ["钱塘湖春行", "饮湖上初晴后雨", "江雪", "山居秋暝"],
-      answer: "钱塘湖春行",
-      tips: [
-        "诗中描写了湖光山色的美景",
-        "出现了早莺、新燕、乱花、浅草等意象",
-        "表达了诗人对西湖春天的热爱"
-      ]
-    },
-    {
       title: "饮湖上初晴后雨",
       author: "苏轼",
       image: "/poetry/yinhu.jpg",
@@ -30,6 +17,19 @@ export default function Module3() {
         "诗中描写了晴雨变化下的西湖美景",
         "有“水光潋滟”“山色空蒙”等意象",
         "表达了诗人对西湖的赞美"
+      ]
+    },
+    {
+      title: "钱塘湖春行",
+      author: "白居易",
+      image: "/poetry/qiantanghu.jpg",
+      audio: "/poetry/qiantanghu.mp3",
+      options: ["钱塘湖春行", "饮湖上初晴后雨", "江雪", "山居秋暝"],
+      answer: "钱塘湖春行",
+      tips: [
+        "诗中描写了湖光山色的美景",
+        "出现了早莺、新燕、乱花、浅草等意象",
+        "表达了诗人对西湖春天的热爱"
       ]
     }
   ];
