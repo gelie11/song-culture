@@ -11,7 +11,7 @@ export default function ReportPage2() {
   const router = useRouter();
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-cover bg-center" style={{backgroundImage: "url('/chushijiemian.jpg')"}}>
-      <div className="w-full max-w-md bg-white/80  shadow-xl p-8 border-4 border-yellow-200" >
+      <div className="w-full max-w-md shadow-xl p-8 border-4 border-yellow-200" >
         <h2 className="text-xl font-bold mb-4 text-gray-800 text-center">文化模块进度</h2>
         <div className="space-y-4 mb-6">
           {modules.map((m, i) => (

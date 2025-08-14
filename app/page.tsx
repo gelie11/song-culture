@@ -206,9 +206,9 @@ export default function HomePage() {
           <div className="absolute inset-0 bg-black/20 z-0" />
             <div className="relative z-10 text-center">
             <motion.div
-              initial={{ scale: 0, rotate: -180 }}
-              animate={{ scale: 1, rotate: 0 }}
-              transition={{ duration: 1, ease: "easeOut" }}
+              initial={{ opacity: 0, y: -50 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay:0.5,ease: "easeOut" }}
               className="text-4xl font-bold text-ancient-gold 
               tracking-wide font-['KaiTi']"
             >

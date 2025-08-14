@@ -14,7 +14,7 @@ export default function AuthPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [showAccountModal, setShowAccountModal] = useState(false);
   const [newAccount, setNewAccount] = useState(""); // 存储新生成的账号
-  
+
   const router = useRouter();
 
   // 页面加载时检查是否有已登录用户
@@ -49,17 +49,17 @@ export default function AuthPage() {
     const existingAccounts = new Set(users.map(u => u.account));
     const maxAttempts = 1000;
     let attempts = 0;
-    
+
     while (attempts < maxAttempts) {
       const newAccount = Math.floor(100000 + Math.random() * 900000).toString();
-      
+
       if (!existingAccounts.has(newAccount)) {
         return newAccount;
       }
-      
+
       attempts++;
     }
-    
+
     throw new Error(`无法生成唯一账号（尝试次数: ${maxAttempts}）`);
   };
 
@@ -134,7 +134,7 @@ export default function AuthPage() {
 
     try {
       const users = JSON.parse(localStorage.getItem("users") || "[]");
-      
+
       // 检查昵称是否已存在
       const isUsernameExist = users.some(
         (u: { username: string }) => u.username === username
@@ -148,20 +148,20 @@ export default function AuthPage() {
       // 生成唯一账号
       const accountNum = generateUniqueAccount(users);
       const userAvatar = avatar || generateRandomAvatar();
-      
-      const newUser = { 
-        account: accountNum, 
-        username, 
-        password, 
-        avatar: userAvatar 
+
+      const newUser = {
+        account: accountNum,
+        username,
+        password,
+        avatar: userAvatar
       };
-      
+
       users.push(newUser);
       localStorage.setItem("users", JSON.stringify(users));
 
       // 存储新账号信息用于显示
       setNewAccount(accountNum);
-      
+
       // 显示账号信息模态框
       setShowAccountModal(true);
     } catch (err: any) {
@@ -182,7 +182,7 @@ export default function AuthPage() {
       username,
       avatar: avatar || generateRandomAvatar()
     }));
-    
+
     // 关闭模态框并跳转
     setShowAccountModal(false);
     router.push("/");
@@ -198,7 +198,7 @@ export default function AuthPage() {
       <div className="relative w-full max-w-sm p-6 bg-white/50 backdrop-blur-sm rounded-lg shadow-xl border border-white/30">
         <h1 className="text-3xl font-extrabold text-center mb-2 text-[#4a4a4a]">临安录</h1>
         <h2 className="text-xl font-semibold text-center mb-6 text-[#7d7d7d]">宋韵漫游</h2>
-        
+
         {isLoginMode ? (
           // 登录表单
           <form onSubmit={handleLogin} className="space-y-4">
@@ -228,10 +228,28 @@ export default function AuthPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-yellow-300 hover:bg-yellow-400 text-gray-800 font-bold py-3 rounded-md transition-all disabled:bg-gray-300 disabled:cursor-not-allowed shadow-md hover:shadow-lg"
+              className="w-full h-14 bg-center bg-cover bg-no-repeat flex items-center justify-center
+             rounded-none border-none outline-none shadow-none
+             disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{
+                backgroundImage: "url('/login-dl.png')", // 你的图片路径
+                 backgroundSize: "contain", // 保证完整显示
+                  height: "100px", // 调大高度
+              }}
             >
-              {isLoading ? "登录中..." : "登录"}
+              
+      <span
+                className="font-bold text-3xl tracking-wider"
+                style={{
+                  fontFamily: "'KaiTi', 'STKaiti', serif",
+                  color: "#5B4636", // 深棕色
+                  textShadow: "0 1px 1px rgba(255,255,255,0.6)", // 增加立体感
+                }}
+              >
+                {isLoading ? "登录中..." : "登录"}
+              </span>
             </button>
+
           </form>
         ) : (
           // 注册表单
@@ -269,40 +287,38 @@ export default function AuthPage() {
                 disabled={isLoading}
               />
             </div>
-            
+
             <div>
               <label className="block mb-1 text-sm font-medium text-gray-700">选择头像</label>
               <div className="flex space-x-2">
                 {[1, 2, 3, 4].map((num) => (
                   <div
                     key={num}
-                    className={`cursor-pointer w-12 h-12 rounded-full overflow-hidden border-2 ${
-                      avatar === `/avatar${num}.jpg` 
-                        ? "border-yellow-400" 
+                    className={`cursor-pointer w-12 h-12 rounded-full overflow-hidden border-2 ${avatar === `/avatar${num}.jpg`
+                        ? "border-yellow-400"
                         : "border-gray-300"
-                    }`}
+                      }`}
                     onClick={() => setAvatar(`/avatar${num}.jpg`)}
                   >
-                    <img 
-                      src={`/avatar${num}.jpg`} 
+                    <img
+                      src={`/avatar${num}.jpg`}
                       alt={`头像 ${num}`}
                       className="w-full h-full object-cover"
                     />
                   </div>
                 ))}
                 <div
-                  className={`cursor-pointer w-12 h-12 rounded-full flex items-center justify-center border-2 ${
-                    !avatar 
-                      ? "border-yellow-400 bg-gray-200" 
+                  className={`cursor-pointer w-12 h-12 rounded-full flex items-center justify-center border-2 ${!avatar
+                      ? "border-yellow-400 bg-gray-200"
                       : "border-gray-300"
-                  }`}
+                    }`}
                   onClick={() => setAvatar("")}
                 >
                   <span className="text-xs text-gray-600">随机</span>
                 </div>
               </div>
             </div>
-            
+
             {error && <p className="text-red-600 text-sm font-medium animate-pulse">{error}</p>}
             <button
               type="submit"
@@ -313,7 +329,7 @@ export default function AuthPage() {
             </button>
           </form>
         )}
-        
+
         {/* 切换登录/注册模式的提示 */}
         <p className="text-sm text-center mt-6 text-gray-600">
           {isLoginMode ? "还没有账号？" : "已有账号？"}
@@ -331,7 +347,7 @@ export default function AuthPage() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg shadow-lg max-w-sm w-full">
             <h3 className="text-xl font-bold mb-4 text-center text-[#4a4a4a]">注册成功</h3>
-            
+
             <div className="mb-6 text-center">
               <p className="text-lg mb-2">您的账号已生成，请牢记！</p>
               <p className="text-2xl font-bold text-yellow-500 bg-gray-100 py-2 px-4 rounded-md inline-block">
@@ -341,7 +357,7 @@ export default function AuthPage() {
                 昵称: <span className="font-semibold">{username}</span>
               </p>
             </div>
-            
+
             <div className="flex justify-center">
               <button
                 onClick={confirmAccountAndLogin}
@@ -350,7 +366,7 @@ export default function AuthPage() {
                 确认
               </button>
             </div>
-            
+
             <p className="mt-4 text-sm text-center text-gray-500">
               请妥善保管您的账号，这是登录的唯一凭证
             </p>
