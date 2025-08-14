@@ -9,6 +9,11 @@ import Link from "next/link"
 import { ArrowLeft, Camera, Palette, Music, Upload } from "lucide-react"
 import { useRouter } from "next/navigation"
 
+// 统一风格
+  const titleFont =
+    '"KaiTi","STKaiti","SimSun","Songti SC","Songti TC",serif';
+  const accent = "#a94438";
+
 export default function DramaPage() {
   const router = useRouter()
   const [currentStep, setCurrentStep] = useState("upload")
@@ -83,40 +88,75 @@ export default function DramaPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-rice-paper via-ivory-white to-cinnabar-red/10 relative overflow-hidden">
-      {/* 顶部导航 */}
-      <div className="relative z-10 p-6">
-        <div className="flex items-center justify-between mb-6">
-          <button onClick={() => router.back()}>
-            <Button variant="ghost" className="text-ink-black hover:bg-ancient-gold/10 ancient-text">
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              返回
-            </Button>
-          </button>
-          <div className="text-center">
-            <h1 className="text-2xl font-bold ancient-title text-ink-black">梨园春秋</h1>
-            <p className="text-sm text-ancient-gold ancient-text">脸谱传神</p>
-          </div>
-          <div className="w-16" />
-        </div>
+    <div className="bg-cover bg-center min-h-screen bg-gradient-to-br from-rice-paper via-ivory-white to-cinnabar-red/10 flex flex-col relative"
+		    style={{ backgroundImage: "url(/drama/bcg.png)", backgroundColor: "#f5f5ef" }}>
+      {/* 返回按钮（透明背景，无外框） */}
+      <div className="relative z-10 w-full max-w-3xl px-4 pt-6">
+        <button
+          onClick={() => router.push("/")}
+          className="inline-flex items-center gap-2 text-black text-base"
+          style={{ fontFamily: titleFont, letterSpacing: "0.04em" }}
+          aria-label="返回上一页"
+        >
+          <svg
+            width="20"
+            height="20"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <line x1="18" y1="10" x2="4" y2="10" />
+            <polyline points="11 17 4 10 11 3" />
+          </svg>
+          返回
+        </button>
       </div>
+				<div className="flex-1 text-center">
+					{/* 居中标题 —— 纯白 */}
+      <h1
+        className="text-center text-[36px] md:text-[44px] font-bold tracking-widest text-white"
+        style={{
+          fontFamily: titleFont,
+          letterSpacing: "0.06em",
+          color: "#ffffff", // 直接强制纯白
+          textShadow:
+            "0 2px 4px rgba(0,0,0,.45), 0 0 1px rgba(0,0,0,.6), 0 0 6px rgba(0,0,0,.25)",
+        }}
+      >
+        梨园春秋
+      </h1>
+      <p
+        className="text-center text-[24px] md:text-[24px] font-bold tracking-widest text-white"
+        style={{
+          fontFamily: titleFont,
+          letterSpacing: "0.06em",
+          color: "#ffffff", // 直接强制纯白
+          textShadow:
+            "0 2px 4px rgba(0,0,0,.45), 0 0 1px rgba(0,0,0,.6), 0 0 6px rgba(0,0,0,.25)",
+        }}
+      >
+        脸谱传神
+      </p>
+          </div>
       {/* 主要内容区域 */}
-      <div className="relative z-10 px-6">
+      <div className="mt-4 relative z-10 px-6">
         {currentStep === "upload" && (
           <motion.div initial={{ opacity: 0, y: 50 }} animate={{ opacity: 1, y: 0 }}>
             <Card className="ancient-card p-6 mb-6 bg-gradient-to-br from-ivory-white to-rice-paper">
               <div className="text-center mb-6">
-                <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-cinnabar-red to-ancient-gold rounded-full flex items-center justify-center">
+                <div className="-mt-4 w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-cinnabar-red to-ancient-gold rounded-full flex items-center justify-center">
                   <Camera className="w-8 h-8 text-ivory-white" />
                 </div>
-                <h2 className="text-xl font-bold ancient-title text-ink-black mb-2">上传照片</h2>
+                <h2 className="-mt-6 text-xl font-bold ancient-title text-ink-black mb-2">上传照片</h2>
                 <p className="ancient-text text-deep-ink text-sm leading-relaxed">
                   上传您的照片，我们将为您生成独特的戏曲脸谱形象，融合东坡诗词的文化韵味
                 </p>
               </div>
               <div
                 onClick={triggerUpload}
-                className="border-2 border-dashed border-ancient-gold/30 rounded-lg p-8 cursor-pointer hover:border-ancient-gold/50 transition-colors text-center"
+                className="-mt-4 border-2 border-dashed border-ancient-gold/30 rounded-lg p-8 cursor-pointer hover:border-ancient-gold/50 transition-colors text-center"
               >
                 <Upload className="w-12 h-12 text-ancient-gold/50 mx-auto mb-3" />
                 <p className="ancient-text text-deep-ink mb-1">点击上传照片</p>
@@ -124,12 +164,12 @@ export default function DramaPage() {
               </div>
               <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
             </Card>
-            <Card className="p-4 bg-ancient-gold/5 border-ancient-gold/20 mb-6">
-              <div className="flex items-center mb-2">
+            <Card className="-mt-4 p-4 bg-ancient-gold border-ancient-gold/20 mb-6 bg-white/60 backdrop-blur-sm border border-black/10">
+              <div className="-mt-2 flex items-center mb-2">
                 <span className="text-2xl mr-2">🎭</span>
                 <h4 className="font-bold ancient-title text-ink-black">宋代戏曲文化</h4>
               </div>
-              <ul className="ancient-text text-deep-ink text-sm list-disc pl-5 space-y-1">
+              <ul className="-mt-2 ancient-text text-deep-ink text-sm list-disc pl-5 space-y-1">
                 <li>宋代是中国戏曲艺术的重要发展期</li>
                 <li>脸谱艺术体现了中国传统美学</li>
                 <li>不同脸谱代表不同的性格特征</li>
@@ -189,14 +229,11 @@ export default function DramaPage() {
         )}
         {currentStep === "result" && (
           <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }}>
-            <Card className="ancient-card p-6 mb-6 bg-gradient-to-br from-ivory-white to-rice-paper">
+            <Card className="-mt-2 ancient-card p-6 mb-6 bg-gradient-to-br from-ivory-white to-rice-paper">
               <div className="text-center mb-6">
-                <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-cinnabar-red to-ancient-gold rounded-full flex items-center justify-center">
-                  <Music className="w-8 h-8 text-ivory-white" />
-                </div>
-                <h2 className="text-xl font-bold ancient-title text-ink-black mb-2">您的专属脸谱</h2>
+                <h2 className="-mt-2 text-xl font-bold ancient-title text-ink-black mb-2">您的专属脸谱</h2>
               </div>
-              <div className="relative w-64 h-64 mx-auto mb-6">
+              <div className="-mt-3 relative w-64 h-64 mx-auto mb-6">
                 {generatedImg && (
                   <img
                     src={generatedImg}
@@ -205,10 +242,10 @@ export default function DramaPage() {
                   />
                 )}
               </div>
-              <Card className="p-4 bg-ancient-gold/5 border-ancient-gold/20 mb-6">
+              <Card className="-mt-2 p-4 bg-ancient-gold/5 border-ancient-gold/20 mb-6">
                 <h4 className="font-bold ancient-title text-ink-black mb-2 text-center">东坡诗韵融入</h4>
-                <p className="ancient-text text-deep-ink text-center mb-2">"人生如戏，戏如人生"</p>
-                <p className="text-sm ancient-text text-deep-ink text-center">
+                <p className="-mt-2 ancient-text text-deep-ink text-center mb-2">"人生如戏，戏如人生"</p>
+                <p className="-mt-2 text-sm ancient-text text-deep-ink text-center">
                   您的{maskTemplates[selectedMask].ancientName}脸谱融合了苏东坡的人生哲学，展现了宋代文人的风雅与豪放
                 </p>
               </Card>
@@ -217,7 +254,6 @@ export default function DramaPage() {
                 transition={{ duration: 4, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
                 className="text-center mb-6"
               >
-                <div className="text-6xl">🎭</div>
               </motion.div>
               <div className="space-y-3">
                 <Button
@@ -227,12 +263,12 @@ export default function DramaPage() {
                     setGeneratedImg(null)
                   }}
                   variant="outline"
-                  className="w-full border-cinnabar-red text-cinnabar-red bg-transparent"
+                  className="-mt-2 w-full border-cinnabar-red text-cinnabar-red bg-transparent"
                 >
                   重新制作
                 </Button>
                 <Link href="/report">
-                  <Button className="w-full ancient-button">查看成就报告 →</Button>
+                  <Button className="mt-4 w-full ancient-button">查看成就报告 →</Button>
                 </Link>
               </div>
             </Card>
