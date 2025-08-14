@@ -17,7 +17,7 @@ export default function ReportPage3() {
         </div>
         <button
           className="mx-auto"
-          onClick={() => router.push('/report/2')}
+          onClick={() => router.push('/')}
           style={{
             backgroundImage: "url('/login-dl.png')", // 替换成实际背景图路径
             backgroundSize: "cover", // 背景图覆盖容器，可改"120% auto"等
