@@ -1,4 +1,5 @@
 "use client"; // 添加这一行解决编译错误
+import Image from "next/image"
 
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -387,11 +388,11 @@ export default function TeaPage() {
             case 'brewing':
                  return (
                     <motion.div key="brewing" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                        <Card className="ancient-card p-6 mb-6 bg-white/80 backdrop-blur-sm">
+                        <Card className="-mt-12 ancient-card p-6 mb-6 bg-white/80 backdrop-blur-sm">
                             <div className="text-center mb-4">
                                 <Coffee className="w-12 h-12 text-bronze-gold mx-auto mb-2" />
                                 <h2 className="text-xl font-bold ancient-title text-ink-black mb-2">第三折：冲泡</h2>
-                                <p className="ancient-text text-deep-ink leading-relaxed text-sm">
+                                <p classsName="ancient-text text-deep-ink leading-relaxed text-sm">
                                     {selectedTeaware === null ? "器为茶之父。请择一佳器。" : `点击水壶向杯中注水，至七分满为佳。`}
                                 </p>
                             </div>
@@ -461,7 +462,7 @@ export default function TeaPage() {
             case 'pincha':
                 return (
                     <motion.div key="pincha" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                        <Card className="ancient-card p-6 mb-6 bg-white/80 backdrop-blur-sm">
+                        <Card className="-mt-8 ancient-card p-6 mb-6 bg-white/80 backdrop-blur-sm">
                             <div className="text-center mb-4">
                                 <Coffee className="w-12 h-12 text-bronze-gold mx-auto mb-2" />
                                 <h2 className="text-xl font-bold ancient-title text-ink-black mb-2">第四折：东坡品茗</h2>
@@ -498,15 +499,30 @@ export default function TeaPage() {
 
                 return (
                     <motion.div key="finished" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                        <Card className="ancient-card p-6 bg-white/80 backdrop-blur-sm">
+                        <Card className="-mt-10 ancient-card p-6 bg-white/80 backdrop-blur-sm">
                             <div className="text-center">
-                                <Trophy className="w-16 h-16 text-ancient-gold mx-auto mb-2" />
+                                {/* 顶部奖杯 + 分数 */}
+  <div className="flex items-center justify-center gap-4 mb-4">
+    <Trophy className="w-16 h-16 text-ancient-gold" />
+    <motion.div
+      initial={{ scale: 0 }}
+      animate={{ scale: 1 }}
+      transition={{ type: "spring", stiffness: 260, damping: 20 }}
+      className="text-6xl font-extrabold text-ancient-gold"
+    >
+      {finalScore}
+    </motion.div>
+  </div>
                                 <h3 className="text-2xl font-bold ancient-title text-ink-black mb-2">恭喜！获封名号：<span className="text-cinnabar-red">{title}</span></h3>
-                                <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 260, damping: 20 }} className="text-6xl font-extrabold text-ancient-gold my-4">{finalScore}</motion.div>
-                                <div className="w-32 h-32 mx-auto mb-4 rounded-full border-4 border-ancient-gold/50 overflow-hidden shadow-inner">
-                                    <img src={FINAL_TEA_PHOTO} alt="Final Tea" className="w-full h-full object-cover"/>
-                                </div>
-                                
+                                {/* 茶叶图片 */}
+  <div className="w-32 h-32 mx-auto mb-4 rounded-full border-4 border-ancient-gold/50 overflow-hidden shadow-inner">
+    <img
+      src={FINAL_TEA_PHOTO}
+      alt="Final Tea"
+      className="w-full h-full object-cover"
+    />
+  </div>
+
                                 <Card className="ancient-card p-4 my-4 bg-ivory-white/50 text-left">
                                     <h4 className="font-bold ancient-title text-ink-black text-center mb-2">{SU_SHI_JUDGE.name} 品鉴分析：</h4>
                                     <ul className="space-y-2 ancient-text text-sm">
@@ -517,9 +533,9 @@ export default function TeaPage() {
                                 </Card>
 
                                 <div className="space-y-3 mt-6">
-                                    <Button onClick={resetGame} className="w-full ancient-button text-lg">再试一番</Button>
-                                    <Link href="/silk"><Button className="w-full ancient-button text-lg">下一站：锦绣华章 →</Button></Link>
-                                    <Link href="/"><Button variant="outline" className="w-full border-bamboo-green text-bamboo-green bg-transparent hover:bg-bamboo-green/10">返回首页</Button></Link>
+                                    <Button onClick={resetGame} className="-mt-2 w-full ancient-button text-lg">再试一番</Button>
+                                    <Link href="/silk"><Button className="mt-2 w-full ancient-button text-lg">下一站：锦绣华章 →</Button></Link>
+                                    <Link href="/"><Button variant="outline" className="mt-2 w-full border-bamboo-green text-bamboo-green bg-transparent hover:bg-bamboo-green/10">返回首页</Button></Link>
                                 </div>
                             </div>
                         </Card>
@@ -537,7 +553,17 @@ export default function TeaPage() {
             
             <div className="relative z-10 p-6">
                 <div className="flex items-center justify-between mb-6">
-                    <Link href="/"><Button variant="ghost" className="text-ink-black hover:bg-ancient-gold/10 ancient-text"><ArrowLeft className="w-4 h-4 mr-2" />返回</Button></Link>
+                    <Link href="/">
+                        <Button variant="ghost" className="text-ink-black hover:bg-ancient-gold/10 ancient-text">
+                        <Image
+      src="/return.png"   // 确保 return.png 放在 public 目录
+      alt="返回"
+      width={40}          // 这里可以调大小，例如 40
+      height={40}
+      className="object-contain"
+      style={{ opacity: 0.6 }}   // 调整透明度
+    />
+                        </Button></Link>
                     <div className="text-center"><h1 className="text-2xl font-bold ancient-title text-ink-black">茶禅一味</h1><p className="text-sm text-ancient-gold ancient-text">东坡品茗</p></div>
                     <button onClick={toggleMusic} className="bg-white/70 hover:bg-white p-2 rounded-full shadow-md transition-all" aria-label="控制音乐">
                         {isMusicPlaying 

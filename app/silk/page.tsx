@@ -528,8 +528,14 @@ export default function SilkPage() {
         <div className="flex items-center justify-between mb-6">
           <Link href="/">
             <Button variant="ghost" className="text-ink-black hover:bg-ancient-gold/10 ancient-text">
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              返回
+              <Image
+      src="/return.png"   // 确保 return.png 放在 public 目录
+      alt="返回"
+      width={40}          // 这里可以调大小，例如 40
+      height={40}
+      className="object-contain"
+      style={{ opacity: 0.8 }}   // 调整透明度
+    />
             </Button>
           </Link>
           <div className="text-center">
@@ -541,7 +547,7 @@ export default function SilkPage() {
       </div>
 
       {/* 主要内容区域 */}
-      <div className="relative z-10 px-6">
+      <div className="-mt-8 relative z-10 px-6">
         {/* 织机可视化区域 */}
         <Card className="ancient-card p-3 mb-6 bg-gradient-to-br from-ivory-white to-rice-paper">
           <div
@@ -608,7 +614,8 @@ export default function SilkPage() {
             )}
 
             {/* 进度显示 */}
-            <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 w-32">
+            <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 w-32"
+                 style={{ bottom: "-30px" }}>
               <div className="ancient-progress h-2 relative">
                 <motion.div
                   className="absolute inset-0 bg-gradient-to-r from-cinnabar-red to-plum-purple rounded-full"
@@ -620,7 +627,7 @@ export default function SilkPage() {
             </div>
           </div>
           {/* 新增的文字描述 */}
-          <p className="text-center text-sm mt-4 ancient-text text-deep-ink">
+          <p className="mt-8 text-center text-sm mt-4 ancient-text text-deep-ink">
             采棉纺纱成线，经线固定，<br></br>纬线穿梭交织，捶打紧实成布。
           </p>
         </Card>
@@ -629,7 +636,7 @@ export default function SilkPage() {
         <Card className="ancient-card p-6 mb-6 bg-gradient-to-br from-ivory-white to-rice-paper">
           <h3 className="text-lg font-bold ancient-title text-ink-black mb-4 text-center">选择纹样</h3>
 
-          <div className="relative">
+          <div className="-mt-4 relative">
             {/* 左滑动按钮 */}
             <button
               onClick={() => scroll('left')}
@@ -681,13 +688,13 @@ export default function SilkPage() {
           <Button
             onClick={handleWeaving}
             disabled={isWeaving}
-            className="w-full ancient-button text-lg py-3 mb-4"
+            className="w-full ancient-button text-lg py-3 mb-4 mt-6"
           >
             {isWeaving ? "织造中..." : weavingProgress >= 100 ? "再次织造" : "开始织造"}
           </Button>
 
           {/* 新增底部导航 */}
-          <div className="flex flex-wrap justify-between gap-4 mt-4">
+          <div className="mt-0 flex flex-wrap justify-between gap-4 mt-4">
             <Link href="/">
               <Button
                 variant="outline"
@@ -785,7 +792,7 @@ export default function SilkPage() {
         )}
 
         {/* 客户选择区 */}
-        <Card className="ancient-card p-3 mb-8 mt-11 bg-gradient-to-br from-rice-paper to-ivory-white">
+        <Card className="mt-16 ancient-card p-3 mb-8 mt-11 bg-gradient-to-br from-rice-paper to-ivory-white">
           <h2 className="text-lg font-bold text-stone-800 mb-3">接待顾客</h2>
           <div className="flex justify-between gap-1">
             {customerTypes.map(customer => (

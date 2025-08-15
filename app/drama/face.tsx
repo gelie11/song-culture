@@ -72,8 +72,14 @@ export default function DramaFacePage() {
         <div className="flex items-center justify-between mb-6">
           <Link href="/drama">
             <Button variant="ghost" className="text-ink-black hover:bg-ancient-gold/10 ancient-text">
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              返回
+            <Image
+      src="/return.png"   // 确保 return.png 放在 public 目录
+      alt="返回"
+      width={40}          // 这里可以调大小，例如 40
+      height={40}
+      className="object-contain"
+      style={{ opacity: 0.6 }}   // 调整透明度
+    />
             </Button>
           </Link>
           <div className="text-center">

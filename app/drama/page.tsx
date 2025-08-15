@@ -141,11 +141,14 @@ export default function DramaEntryPage() {
           style={{ fontFamily: titleFont, letterSpacing: "0.04em" }}
           aria-label="返回上一页"
         >
-          <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="18" y1="10" x2="4" y2="10" />
-            <polyline points="11 17 4 10 11 3" />
-          </svg>
-          返回
+          <Image
+      src="/return.png"   // 确保 return.png 放在 public 目录
+      alt="返回"
+      width={40}          // 这里可以调大小，例如 40
+      height={40}
+      className="object-contain"
+      style={{ opacity: 0.7 }}   // 调整透明度
+    />
         </button>
       </div>
 

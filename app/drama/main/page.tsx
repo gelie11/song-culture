@@ -8,6 +8,7 @@ import { Card } from "@/components/ui/card"
 import Link from "next/link"
 import { ArrowLeft, Camera, Palette, Music, Upload } from "lucide-react"
 import { useRouter } from "next/navigation"
+import Image from "next/image"
 
 // 统一风格
   const titleFont =
@@ -98,25 +99,20 @@ export default function DramaPage() {
           style={{ fontFamily: titleFont, letterSpacing: "0.04em" }}
           aria-label="返回上一页"
         >
-          <svg
-            width="20"
-            height="20"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <line x1="18" y1="10" x2="4" y2="10" />
-            <polyline points="11 17 4 10 11 3" />
-          </svg>
-          返回
+          <Image
+      src="/return.png"   // 确保 return.png 放在 public 目录
+      alt="返回"
+      width={40}          // 这里可以调大小，例如 40
+      height={40}
+      className="object-contain"
+      style={{ opacity: 0.6 }}   // 调整透明度
+    />
         </button>
       </div>
 				<div className="flex-1 text-center">
 					{/* 居中标题 —— 纯白 */}
       <h1
-        className="text-center text-[36px] md:text-[44px] font-bold tracking-widest text-white"
+        className="-mt-8 text-center text-[36px] md:text-[44px] font-bold tracking-widest text-white"
         style={{
           fontFamily: titleFont,
           letterSpacing: "0.06em",
@@ -128,7 +124,7 @@ export default function DramaPage() {
         梨园春秋
       </h1>
       <p
-        className="text-center text-[24px] md:text-[24px] font-bold tracking-widest text-white"
+        className="-mt-2 text-center text-[24px] md:text-[24px] font-bold tracking-widest text-white"
         style={{
           fontFamily: titleFont,
           letterSpacing: "0.06em",

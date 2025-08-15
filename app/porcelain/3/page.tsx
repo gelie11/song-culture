@@ -120,10 +120,15 @@ export default function NewPage() {
         className="absolute top-6 left-6 z-20 flex items-center gap-1 p-2 text-black hover:text-gray-700 transition-colors bg-transparent border-none focus:outline-none"
         aria-label="返回"
       >
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <Image
+      src="/return.png"   // 确保 return.png 放在 public 目录
+      alt="返回"
+      width={40}          // 这里可以调大小，例如 40
+      height={40}
+      className="object-contain"
+      style={{ opacity: 0.8 }}   // 调整透明度
+    />
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-        </svg>
-        <span className="text-lg font-medium">返回</span>
       </button>
 
       {/* 通风控制滑块（右侧）- 优化后版本 */}
@@ -170,15 +175,19 @@ export default function NewPage() {
       </div>
 
       {/* 跑道型窑温显示器（主按钮上方） */}
-      <div className="absolute bottom-[40%] left-1/2 transform -translate-x-1/2 w-64 h-12 bg-gray-800/70 rounded-full z-20 overflow-hidden">
-        <div 
-          className="h-full bg-gradient-to-r from-red-500 via-yellow-400 to-green-500 transition-all duration-300"
-          style={{ width: `${Math.min(100, (temperature / targetTemperature) * 100)}%` }}
-        />
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-white font-bold">
-          {Math.round(temperature)}°C / {targetTemperature}°C
-        </div>
-      </div>
+<div className="absolute bottom-[40%] left-1/2 transform -translate-x-1/2 w-64 h-12 bg-gray-800/70 rounded-full z-20 overflow-hidden">
+  <div
+    className="h-full bg-gradient-to-r from-red-500 via-yellow-400 to-green-500 transition-all duration-300"
+    style={{
+      width: `${Math.min(100, (temperature / targetTemperature) * 100)}%`
+    }}
+  />
+  <div
+    className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-white font-bold whitespace-nowrap text-center"
+  >
+    {Math.round(temperature)}°C / {targetTemperature}°C
+  </div>
+</div>
 
       {/* 主按钮（居中底部） */}
       <div className="absolute bottom-[18%] left-1/2 transform -translate-x-1/2 z-20">

@@ -323,7 +323,7 @@ export default function HomePage() {
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.2, duration: 0.8 }}
-          className="mb-1"
+          className="mb-4 -mt-6"
         >
           <Card className="p-6 text-center max-w-md mx-auto bg-transparent border-none"
             style={{
@@ -431,7 +431,7 @@ export default function HomePage() {
           })}
         </motion.div>
         {/* 内容区域右下角设置按钮 */}
-        <div className="mt-auto flex justify-end">
+        <div className="mt-4 flex justify-end">
           <motion.button
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}

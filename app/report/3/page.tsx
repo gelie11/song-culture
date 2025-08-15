@@ -4,7 +4,7 @@ export default function ReportPage3() {
   const router = useRouter();
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-cover bg-center" style={{ backgroundImage: "url('/chushijiemian.jpg')" }}>
-      <div className="w-full max-w-md bg-white/80 rounded-3xl shadow-xl p-8 border-0 " style={{ marginTop: '5vh' }}>
+      <div className="mx-4 max-w-md bg-white/80 rounded-3xl shadow-xl p-8 border-0 " style={{ marginTop: '5vh' }}>
         <div className="flex items-center mb-4">
 
           <span className="text-lg font-semibold text-gray-700">东坡寄语</span>

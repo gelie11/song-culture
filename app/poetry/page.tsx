@@ -1,5 +1,6 @@
 "use client";
 import { useRouter } from "next/navigation";
+import Image from "next/image"
 
 export default function PoetryPage() {
   const router = useRouter();
@@ -16,29 +17,28 @@ export default function PoetryPage() {
       {/* 顶部渐变可选 */}
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-white/0" />
 
-      {/* 返回按钮（透明背景，无外框） */}
-      <div className="relative z-10 w-full max-w-3xl px-4 pt-6">
-        <button
-          onClick={() => router.push("/")}
-          className="inline-flex items-center gap-2 text-white hover:text-gray-200 text-base"
-          style={{ fontFamily: titleFont, letterSpacing: "0.04em" }}
-          aria-label="返回上一页"
-        >
-          <svg
-            width="20"
-            height="20"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <line x1="18" y1="10" x2="4" y2="10" />
-            <polyline points="11 17 4 10 11 3" />
-          </svg>
-          返回
-        </button>
-      </div>
+      {/* 返回按钮（只显示图片） */}
+<div className="relative z-10 w-full max-w-3xl px-4 pt-6">
+  <button
+    onClick={() => router.push("/")}
+    aria-label="返回上一页"
+    className="focus:outline-none"
+    style={{
+      background: "transparent",
+      border: "none",
+      padding: 0
+    }}
+  >
+    <Image
+      src="/return.png"   // 确保 return.png 放在 public 目录
+      alt="返回"
+      width={40}          // 这里可以调大小，例如 40
+      height={40}
+      className="object-contain"
+      style={{ opacity: 0.6 }}   // 调整透明度
+    />
+  </button>
+</div>
 
       {/* 标题：白色文字 */}
       <div className="relative z-10 w-full max-w-3xl px-4 pt-4 pb-2">

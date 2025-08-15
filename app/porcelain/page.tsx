@@ -92,22 +92,21 @@ export default function PorcelainPage() {
         className="absolute top-6 left-6 z-20 flex items-center gap-1 p-2 text-black hover:text-gray-700 transition-colors bg-transparent border-none focus:outline-none"
         aria-label="返回"
       >
-        <svg
-          className="w-5 h-5"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
+        <Image
+      src="/return.png"   // 确保 return.png 放在 public 目录
+      alt="返回"
+      width={40}          // 这里可以调大小，例如 40
+      height={40}
+      className="object-contain"
+      style={{ opacity: 0.8 }}   // 调整透明度
+    />
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
             strokeWidth={2}
             d="M10 19l-7-7m0 0l7-7m-7 7h18"
           />
-        </svg>
-        <span className="text-lg font-medium">返回</span>
       </button>
-
 
       /* 左侧按钮组/卡片切换区 */
   <div className="absolute left-2 top-1/2 transform -translate-y-1/2 z-20">

@@ -1,6 +1,7 @@
 ﻿"use client";
 import { useRouter } from "next/navigation";
 import { useState, useRef } from "react";
+import Image from "next/image"
 
 export default function Module3() {
   const router = useRouter();
@@ -91,33 +92,32 @@ export default function Module3() {
       style={{ backgroundImage: "url(/poetry/bcg4.png)", backgroundColor: "#f5f5ef" }}
     >
 
-      {/* 返回按钮（透明背景，无外框） */}
-      <div className="relative z-10 w-full max-w-3xl px-4 pt-6">
-        <button
-          onClick={() => router.push("/poetry")}
-          className="inline-flex items-center gap-2 text-black text-base"
-          style={{ fontFamily: titleFont, letterSpacing: "0.04em" }}
-          aria-label="返回上一页"
-        >
-          <svg
-            width="20"
-            height="20"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <line x1="18" y1="10" x2="4" y2="10" />
-            <polyline points="11 17 4 10 11 3" />
-          </svg>
-          返回
-        </button>
-      </div>
+     {/* 返回按钮（只显示图片） */}
+<div className="relative z-10 w-full max-w-3xl px-4 pt-6">
+  <button
+    onClick={() => router.push("/poetry")}
+    aria-label="返回上一页"
+    className="focus:outline-none"
+    style={{
+      background: "transparent",
+      border: "none",
+      padding: 0
+    }}
+  >
+    <Image
+      src="/return.png"   // 确保 return.png 放在 public 目录
+      alt="返回"
+      width={40}          // 这里可以调大小，例如 40
+      height={40}
+      className="object-contain"
+      style={{ opacity: 0.6 }}   // 调整透明度
+    />
+  </button>
+</div>
 
       {/* 居中标题 —— 纯白 */}
       <h1
-        className="text-center text-[36px] md:text-[44px] font-bold tracking-widest text-white"
+        className="-mt-4 text-center text-[36px] md:text-[44px] font-bold tracking-widest text-white"
         style={{
           fontFamily: titleFont,
           letterSpacing: "0.06em",
@@ -169,7 +169,7 @@ export default function Module3() {
         </div>
 
         {/* 选项区 */}
-        <div className="w-full max-w-md flex flex-col items-center mb-4 mt-6">
+        <div className="mt-1 w-full max-w-md flex flex-col items-center mb-4 mt-6">
             <div className="grid grid-cols-2 gap-3 w-full mb-3">
                 {poems[current].options.map(opt => (
                 <button
